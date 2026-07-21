@@ -4,220 +4,158 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Cake Ball Lady — Custom Cake Balls in Evansville, IN</title>
-<meta name="description" content="Custom-order cake balls for any occasion in Evansville, Indiana. Flavors and colors tailored to your party, shower, wedding, or just because.">
+<meta name="description" content="Order cake balls online in Evansville, Indiana. Set-price favorites you can buy and pay for right here, plus custom orders for any occasion.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --white:#FFFDFB;
-    --blush:#FFF0F4;
-    --cocoa:#4A2C2A;
-    --cocoa-soft:#8A6866;
-    --pink:#F2568C;
-    --pink-deep:#D33B72;
-    --mint:#7DD8C3;
-    --butter:#FFD666;
-    --sky:#8FC7F2;
+    --white:#FFFDFB;--blush:#FFF0F4;--cocoa:#4A2C2A;--cocoa-soft:#8A6866;
+    --pink:#F2568C;--pink-deep:#D33B72;--mint:#7DD8C3;--butter:#FFD666;--sky:#8FC7F2;
     --radius:20px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{
-    font-family:'Nunito',sans-serif;
-    background:var(--white);
-    color:var(--cocoa);
-    line-height:1.6;
-    font-size:17px;
-  }
+  body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--cocoa);line-height:1.6;font-size:17px;}
   h1,h2,h3{font-family:'Baloo 2',cursive;color:var(--cocoa);line-height:1.1;}
   .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
   :focus-visible{outline:3px solid var(--pink);outline-offset:3px;border-radius:6px;}
 
-  /* ---------- Nav ---------- */
-  nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(255,253,251,.93);
-    backdrop-filter:blur(8px);
-    border-bottom:1px solid #F5E6EA;
-  }
+  .preview-strip{background:var(--cocoa);color:#FFE9EF;text-align:center;font-size:.86rem;font-weight:600;padding:8px 16px;}
+  .preview-strip b{color:var(--butter);}
+
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,253,251,.95);backdrop-filter:blur(8px);border-bottom:1px solid #F5E6EA;}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;max-width:1040px;margin:0 auto;}
   .brand{font-family:'Baloo 2';font-weight:800;font-size:1.2rem;color:var(--cocoa);text-decoration:none;display:flex;align-items:center;gap:9px;}
   .brand .dot{width:22px;height:22px;border-radius:50%;background:var(--pink);box-shadow:inset -4px -4px 0 rgba(0,0,0,.12);}
   .nav-links{display:flex;gap:24px;align-items:center;}
   .nav-links a{color:var(--cocoa);text-decoration:none;font-weight:700;font-size:.93rem;}
   .nav-links a:hover{color:var(--pink);}
-  .nav-cta{background:var(--pink);color:#fff !important;padding:9px 20px;border-radius:999px;}
-  .nav-cta:hover{background:var(--pink-deep);}
-  @media(max-width:640px){.nav-links a:not(.nav-cta){display:none;}}
+  .nav-cart{background:var(--pink);color:#fff !important;padding:9px 18px;border-radius:999px;position:relative;border:none;cursor:pointer;font-family:'Nunito';font-weight:800;font-size:.93rem;}
+  .nav-cart:hover{background:var(--pink-deep);}
+  .nav-cart .badge{background:#fff;color:var(--pink-deep);border-radius:999px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:800;}
+  @media(max-width:640px){.nav-links a:not(.nav-cart){display:none;}}
 
-  /* ---------- Hero ---------- */
-  header{
-    padding:70px 0 60px;
-    background:
-      radial-gradient(circle 300px at 90% 10%, var(--blush) 0%, transparent 70%),
-      radial-gradient(circle 240px at 5% 90%, #EFFAF6 0%, transparent 70%),
-      var(--white);
-    overflow:hidden;position:relative;
-  }
-  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
+  header{padding:64px 0 46px;background:radial-gradient(circle 300px at 90% 10%,var(--blush) 0%,transparent 70%),radial-gradient(circle 240px at 5% 90%,#EFFAF6 0%,transparent 70%),var(--white);}
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;}
   @media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center;}}
-  .eyebrow{
-    display:inline-block;font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;
-    font-weight:800;color:var(--pink);margin-bottom:14px;
-  }
-  .hero h1{font-size:clamp(2.5rem,6vw,4rem);font-weight:800;margin-bottom:16px;}
+  .eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--pink);margin-bottom:14px;}
+  .hero h1{font-size:clamp(2.4rem,6vw,3.7rem);font-weight:800;margin-bottom:16px;}
   .hero h1 .pop{color:var(--pink);}
-  .hero p.lede{font-size:1.13rem;color:var(--cocoa-soft);max-width:44ch;margin-bottom:26px;font-weight:600;}
+  .hero p.lede{font-size:1.12rem;color:var(--cocoa-soft);max-width:46ch;margin-bottom:22px;font-weight:600;}
   @media(max-width:820px){.hero p.lede{margin-left:auto;margin-right:auto;}}
-  .fans{
-    display:inline-flex;align-items:center;gap:10px;
-    background:var(--blush);border-radius:999px;padding:8px 18px;
-    font-weight:800;font-size:.9rem;color:var(--pink-deep);margin-bottom:26px;
-  }
-  .btn{
-    display:inline-block;text-decoration:none;font-weight:800;font-size:1rem;
-    padding:15px 30px;border-radius:999px;transition:transform .15s ease, background .15s ease;
-    font-family:'Baloo 2';
-  }
+  .fans{display:inline-flex;align-items:center;gap:10px;background:var(--blush);border-radius:999px;padding:8px 18px;font-weight:800;font-size:.9rem;color:var(--pink-deep);margin-bottom:24px;}
+  .btn{display:inline-block;text-decoration:none;font-weight:800;font-size:1rem;padding:14px 28px;border-radius:999px;transition:transform .15s ease,background .15s ease;font-family:'Baloo 2';cursor:pointer;border:none;}
   .btn:active{transform:scale(.96);}
   .btn-primary{background:var(--pink);color:#fff;box-shadow:0 8px 22px rgba(242,86,140,.35);}
   .btn-primary:hover{background:var(--pink-deep);}
   .btn-soft{background:#fff;color:var(--pink-deep);border:2px solid var(--pink);margin-left:10px;}
   .btn-soft:hover{background:var(--blush);}
-
-  /* hero cake ball stack */
   .stack{display:flex;justify-content:center;}
-  .stack svg{width:min(360px,82vw);height:auto;overflow:visible;}
+  .stack svg{width:min(340px,82vw);height:auto;overflow:visible;}
   .bob{animation:bob 4.5s ease-in-out infinite;}
-  .bob.b2{animation-delay:.8s;}
-  .bob.b3{animation-delay:1.6s;}
+  .bob.b2{animation-delay:.8s;}.bob.b3{animation-delay:1.6s;}
   @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
   @media(prefers-reduced-motion:reduce){.bob{animation:none;}html{scroll-behavior:auto;}}
 
-  /* ---------- Sections ---------- */
-  section{padding:76px 0;}
-  .section-head{text-align:center;max-width:600px;margin:0 auto 44px;}
+  section{padding:70px 0;}
+  .section-head{text-align:center;max-width:620px;margin:0 auto 40px;}
   .section-head h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;margin-bottom:8px;}
   .section-head p{color:var(--cocoa-soft);font-weight:600;}
+
+  /* Shop */
+  #shop{background:var(--white);}
+  .shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  @media(max-width:820px){.shop-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:560px){.shop-grid{grid-template-columns:1fr;}}
+  .item{background:#fff;border:2px solid #F5E6EA;border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;}
+  .item .pic{height:150px;display:grid;place-items:center;font-family:'Baloo 2';font-weight:700;color:#fff;font-size:1.05rem;letter-spacing:.02em;position:relative;}
+  .item .sale-flag{position:absolute;top:10px;left:10px;background:var(--butter);color:var(--cocoa);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:999px;}
+  .item .body{padding:18px 18px 20px;display:flex;flex-direction:column;flex:1;}
+  .item h3{font-size:1.22rem;margin-bottom:4px;}
+  .item p{font-size:.9rem;color:var(--cocoa-soft);font-weight:600;margin-bottom:14px;flex:1;}
+  .item .priced{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+  .item .price{font-family:'Baloo 2';font-weight:800;font-size:1.5rem;color:var(--pink-deep);}
+  .item .was{font-size:.95rem;color:#B9A;text-decoration:line-through;font-weight:700;}
+  .item .add{background:var(--pink);color:#fff;border:none;border-radius:999px;padding:11px;font-family:'Nunito';font-weight:800;font-size:.95rem;cursor:pointer;}
+  .item .add:hover{background:var(--pink-deep);}
+  .soldout{opacity:.55;}
+  .soldout .add{background:#C9B9BC;cursor:not-allowed;}
+
+  /* Custom order */
+  #custom{background:var(--blush);}
+  .custom-card{background:#fff;border-radius:24px;padding:36px;max-width:680px;margin:0 auto;border:2px solid #F5D9E1;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:520px){.form-row{grid-template-columns:1fr;}}
+  .fld{margin-bottom:14px;}
+  .fld label{display:block;font-weight:800;font-size:.85rem;color:var(--cocoa);margin-bottom:5px;}
+  .fld input,.fld textarea{width:100%;padding:12px 14px;border:2px solid #F0E4E0;border-radius:12px;font-family:'Nunito';font-size:.96rem;background:#FFFDFB;}
+  .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--pink);}
+  .fld textarea{resize:vertical;min-height:90px;}
+  .custom-note{font-size:.85rem;color:var(--cocoa-soft);font-weight:600;margin-top:6px;}
 
   /* How it works */
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
   @media(max-width:760px){.steps{grid-template-columns:1fr;}}
-  .step-card{
-    background:#fff;border:2px solid #F5E6EA;border-radius:var(--radius);
-    padding:30px 26px;text-align:center;
-  }
-  .step-card .num{
-    width:44px;height:44px;border-radius:50%;margin:0 auto 14px;
-    display:grid;place-items:center;color:#fff;
-    font-family:'Baloo 2';font-weight:800;font-size:1.3rem;
-  }
+  .step-card{background:#fff;border:2px solid #F5E6EA;border-radius:var(--radius);padding:28px 24px;text-align:center;}
+  .step-card .num{width:44px;height:44px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;color:#fff;font-family:'Baloo 2';font-weight:800;font-size:1.3rem;}
   .step-card:nth-child(1) .num{background:var(--pink);}
   .step-card:nth-child(2) .num{background:var(--mint);}
   .step-card:nth-child(3) .num{background:var(--butter);color:var(--cocoa);}
-  .step-card h3{font-size:1.3rem;margin-bottom:8px;}
-  .step-card p{font-size:.95rem;color:var(--cocoa-soft);font-weight:600;}
-
-  /* Occasions */
-  #occasions{background:var(--blush);}
-  .occ-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
-  .occ{
-    background:#fff;border-radius:999px;padding:10px 22px;
-    font-weight:800;font-size:.95rem;color:var(--cocoa);
-    border:2px solid #F5D9E1;
-  }
-  .occ span{margin-right:6px;}
-
-  /* ---------- Build a dozen (signature) ---------- */
-  #build{background:var(--white);}
-  .builder{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;}
-  @media(max-width:820px){.builder{grid-template-columns:1fr;}}
-  .flavors{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  @media(max-width:480px){.flavors{grid-template-columns:1fr;}}
-  .flavor{
-    display:flex;align-items:center;gap:12px;
-    background:#fff;border:2px solid #F0E4E0;border-radius:14px;
-    padding:12px 16px;cursor:pointer;font-weight:800;font-size:.95rem;
-    font-family:'Nunito';color:var(--cocoa);
-    transition:border-color .15s ease, transform .1s ease;
-    text-align:left;width:100%;
-  }
-  .flavor:hover{border-color:var(--pink);transform:translateY(-2px);}
-  .flavor .swatch{
-    width:26px;height:26px;border-radius:50%;flex-shrink:0;
-    box-shadow:inset -4px -4px 0 rgba(0,0,0,.14);
-  }
-  .box-panel{
-    background:var(--blush);border-radius:24px;padding:32px;text-align:center;
-    position:sticky;top:90px;
-  }
-  .box-panel h3{font-size:1.4rem;margin-bottom:4px;}
-  .box-panel .count{font-weight:800;color:var(--pink-deep);margin-bottom:18px;display:block;}
-  .dozen{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
-    background:#fff;border-radius:16px;padding:20px;margin-bottom:20px;
-    border:2px dashed #F0C6D4;
-  }
-  .slot{
-    aspect-ratio:1/1;border-radius:50%;
-    background:#F7EEF0;
-    transition:background .2s ease, box-shadow .2s ease;
-  }
-  .slot.filled{box-shadow:inset -6px -6px 0 rgba(0,0,0,.14);}
-  .builder-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-  .mini-btn{
-    background:none;border:none;color:var(--cocoa-soft);font-weight:800;
-    font-size:.85rem;cursor:pointer;text-decoration:underline;font-family:'Nunito';
-    margin-top:12px;
-  }
-  .mini-btn:hover{color:var(--pink-deep);}
-  .box-note{font-size:.83rem;color:var(--cocoa-soft);font-weight:600;margin-top:14px;}
-
-  /* ---------- Order CTA ---------- */
-  #order .order-card{
-    background:linear-gradient(135deg,var(--pink) 0%, #E8447F 100%);
-    border-radius:28px;padding:56px 40px;text-align:center;color:#fff;
-    position:relative;overflow:hidden;
-  }
-  #order .order-card::before,#order .order-card::after{
-    content:"";position:absolute;border-radius:50%;
-    background:rgba(255,255,255,.14);
-  }
-  #order .order-card::before{width:180px;height:180px;top:-60px;right:-40px;}
-  #order .order-card::after{width:120px;height:120px;bottom:-40px;left:-30px;}
-  #order h2{color:#fff;font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:10px;}
-  #order p{max-width:50ch;margin:0 auto 28px;color:#FFE3ED;font-weight:600;}
-  #order .btn{background:#fff;color:var(--pink-deep);position:relative;z-index:1;}
-  #order .btn:hover{background:var(--blush);}
+  .step-card h3{font-size:1.25rem;margin-bottom:6px;}
+  .step-card p{font-size:.92rem;color:var(--cocoa-soft);font-weight:600;}
 
   footer{background:var(--blush);padding:34px 0;font-size:.92rem;color:var(--cocoa-soft);font-weight:600;}
   .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;}
   .foot .fbrand{font-family:'Baloo 2';font-weight:800;color:var(--cocoa);font-size:1.05rem;}
   .foot a{color:var(--pink-deep);font-weight:800;text-decoration:none;}
-  .foot a:hover{text-decoration:underline;}
 
-  /* Pitch ribbon */
-  .pitch{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--cocoa);}
-  .pitch-inner{max-width:1040px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;}
-  .pitch-text{color:#F5E6EA;font-size:.93rem;font-weight:600;}
-  .pitch-text strong{color:var(--butter);}
-  .pitch-btn{background:var(--pink);color:#fff;text-decoration:none;font-weight:800;font-size:.9rem;padding:8px 18px;border-radius:999px;white-space:nowrap;}
-  .pitch-btn:hover{background:var(--pink-deep);}
-  .pitch-close{background:none;border:none;color:#C9A8A6;font-size:1.5rem;line-height:1;cursor:pointer;padding:4px 8px;}
-  .pitch-close:hover{color:#fff;}
-  body{padding-bottom:64px;}
+  /* Cart drawer */
+  .overlay{position:fixed;inset:0;background:rgba(74,44,42,.45);opacity:0;pointer-events:none;transition:.2s;z-index:70;}
+  .overlay.open{opacity:1;pointer-events:auto;}
+  .cart{position:fixed;top:0;right:0;bottom:0;width:min(390px,92vw);background:var(--white);z-index:80;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(74,44,42,.2);}
+  .cart.open{transform:none;}
+  .cart-head{padding:20px 22px;border-bottom:1px solid #F5E6EA;display:flex;align-items:center;justify-content:space-between;}
+  .cart-head h3{font-size:1.35rem;}
+  .cart-close{background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--cocoa-soft);line-height:1;}
+  .cart-items{flex:1;overflow-y:auto;padding:14px 22px;}
+  .cart-empty{text-align:center;color:var(--cocoa-soft);font-weight:600;padding:40px 10px;}
+  .ci{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed #F0E4E0;}
+  .ci .cidot{width:34px;height:34px;border-radius:50%;flex-shrink:0;box-shadow:inset -5px -5px 0 rgba(0,0,0,.12);}
+  .ci .ciname{flex:1;font-weight:800;font-size:.92rem;}
+  .ci .ciprice{font-weight:800;color:var(--pink-deep);}
+  .ci .qty{display:flex;align-items:center;gap:8px;margin-top:3px;}
+  .ci .qty button{width:24px;height:24px;border-radius:50%;border:1px solid #E7D3D8;background:#fff;cursor:pointer;font-weight:800;color:var(--pink-deep);line-height:1;}
+  .ci .qty span{font-weight:800;font-size:.9rem;min-width:16px;text-align:center;}
+  .cart-foot{padding:20px 22px;border-top:1px solid #F5E6EA;}
+  .cart-total{display:flex;justify-content:space-between;font-family:'Baloo 2';font-weight:800;font-size:1.3rem;color:var(--cocoa);margin-bottom:14px;}
+  .checkout{width:100%;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:15px;font-family:'Baloo 2';font-weight:800;font-size:1.1rem;cursor:pointer;}
+  .checkout:hover{background:var(--pink-deep);}
+  .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
+  .pay-note{text-align:center;font-size:.8rem;color:var(--cocoa-soft);font-weight:600;margin-top:10px;}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;display:none;place-items:center;z-index:90;padding:20px;}
+  .modal.open{display:grid;}
+  .modal .box{background:#fff;border-radius:22px;max-width:440px;width:100%;padding:32px;text-align:center;box-shadow:0 30px 70px rgba(74,44,42,.35);}
+  .modal .box .ic{font-size:2.4rem;margin-bottom:8px;}
+  .modal .box h3{font-size:1.5rem;margin-bottom:8px;}
+  .modal .box p{color:var(--cocoa-soft);font-weight:600;font-size:.96rem;margin-bottom:20px;}
+  .modal .box .btn{margin:0;}
 </style>
 </head>
 <body>
+
+<div class="preview-strip"><b>Preview</b> for The Cake Ball Lady — set-price items and card checkout go live once your payment account is connected. Menu prices shown are samples.</div>
 
 <nav>
   <div class="nav-inner">
     <a class="brand" href="#top"><span class="dot"></span>The Cake Ball Lady</a>
     <div class="nav-links">
+      <a href="#shop">Shop</a>
+      <a href="#custom">Custom Orders</a>
       <a href="#how">How It Works</a>
-      <a href="#build">Build a Dozen</a>
-      <a class="nav-cta" href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Order Now</a>
+      <button class="nav-cart" id="openCart">Order <span class="badge" id="cartCount">0</span></button>
     </div>
   </div>
 </nav>
@@ -225,127 +163,74 @@
 <header id="top">
   <div class="wrap hero">
     <div>
-      <span class="eyebrow">Custom Cake Balls · Evansville, Indiana</span>
+      <span class="eyebrow">Cake Balls · Evansville, Indiana</span>
       <h1>Little bites of cake. <span class="pop">Big moments.</span></h1>
-      <p class="lede">Custom-order cake balls for any occasion — flavors and colors matched to your party, your shower, your team, your Tuesday.</p>
+      <p class="lede">Order our set-price favorites and pay right here, or request a custom order for your party, shower, or wedding. Made fresh, matched to your colors and flavors.</p>
       <div class="fans">&#10084;&#65039; Loved by 3,400+ fans on Facebook</div>
       <div>
-        <a class="btn btn-primary" href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Message to order</a>
-        <a class="btn btn-soft" href="#build">Build your dozen</a>
+        <a class="btn btn-primary" href="#shop">Shop cake balls</a>
+        <a class="btn btn-soft" href="#custom">Custom order</a>
       </div>
     </div>
     <div class="stack" aria-hidden="true">
       <svg viewBox="0 0 320 300">
-        <!-- pedestal -->
         <ellipse cx="160" cy="272" rx="120" ry="14" fill="#F5E6EA"/>
         <rect x="140" y="220" width="40" height="50" rx="8" fill="#F0D9DF"/>
         <ellipse cx="160" cy="222" rx="86" ry="14" fill="#FFF"/>
         <ellipse cx="160" cy="218" rx="86" ry="14" fill="#F8EDF0"/>
-        <!-- cake balls -->
-        <g class="bob">
-          <circle cx="110" cy="180" r="34" fill="#F2568C"/>
-          <circle cx="110" cy="180" r="34" fill="rgba(0,0,0,.12)" clip-path="inset(50% 0 0 0)"/>
-          <path d="M92 168c4-3 8-2 11 1M116 160c4-3 8-2 11 1M104 190c4-3 8-2 11 1" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
-        </g>
-        <g class="bob b2">
-          <circle cx="188" cy="164" r="38" fill="#7DD8C3"/>
-          <circle cx="188" cy="164" r="38" fill="rgba(0,0,0,.10)" clip-path="inset(55% 0 0 0)"/>
-          <circle cx="176" cy="152" r="3" fill="#F2568C"/><circle cx="200" cy="148" r="3" fill="#FFD666"/>
-          <circle cx="192" cy="174" r="3" fill="#8FC7F2"/><circle cx="206" cy="166" r="3" fill="#fff"/>
-        </g>
-        <g class="bob b3">
-          <circle cx="152" cy="106" r="30" fill="#5C3A38"/>
-          <circle cx="152" cy="106" r="30" fill="rgba(0,0,0,.14)" clip-path="inset(52% 0 0 0)"/>
-          <path d="M138 96c3-2.5 6.5-1.5 9 .8M154 90c3-2.5 6.5-1.5 9 .8M146 114c3-2.5 6.5-1.5 9 .8" stroke="#FFD666" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-        </g>
-        <!-- confetti -->
+        <g class="bob"><circle cx="110" cy="180" r="34" fill="#F2568C"/><circle cx="110" cy="180" r="34" fill="rgba(0,0,0,.12)" clip-path="inset(50% 0 0 0)"/><path d="M92 168c4-3 8-2 11 1M116 160c4-3 8-2 11 1M104 190c4-3 8-2 11 1" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+        <g class="bob b2"><circle cx="188" cy="164" r="38" fill="#7DD8C3"/><circle cx="188" cy="164" r="38" fill="rgba(0,0,0,.10)" clip-path="inset(55% 0 0 0)"/><circle cx="176" cy="152" r="3" fill="#F2568C"/><circle cx="200" cy="148" r="3" fill="#FFD666"/><circle cx="192" cy="174" r="3" fill="#8FC7F2"/><circle cx="206" cy="166" r="3" fill="#fff"/></g>
+        <g class="bob b3"><circle cx="152" cy="106" r="30" fill="#5C3A38"/><circle cx="152" cy="106" r="30" fill="rgba(0,0,0,.14)" clip-path="inset(52% 0 0 0)"/><path d="M138 96c3-2.5 6.5-1.5 9 .8M154 90c3-2.5 6.5-1.5 9 .8M146 114c3-2.5 6.5-1.5 9 .8" stroke="#FFD666" stroke-width="2.6" stroke-linecap="round" fill="none"/></g>
         <rect x="52" y="70" width="8" height="8" rx="2" fill="#FFD666" transform="rotate(20 56 74)"/>
         <rect x="252" y="96" width="8" height="8" rx="2" fill="#8FC7F2" transform="rotate(-16 256 100)"/>
         <rect x="236" y="46" width="7" height="7" rx="2" fill="#F2568C" transform="rotate(30 239 49)"/>
-        <circle cx="80" cy="120" r="4" fill="#7DD8C3"/>
-        <circle cx="270" cy="180" r="4" fill="#FFD666"/>
-        <circle cx="60" cy="220" r="3.5" fill="#F2568C"/>
+        <circle cx="80" cy="120" r="4" fill="#7DD8C3"/><circle cx="270" cy="180" r="4" fill="#FFD666"/><circle cx="60" cy="220" r="3.5" fill="#F2568C"/>
       </svg>
     </div>
   </div>
 </header>
 
+<section id="shop">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Shop the menu</h2>
+      <p>Set-price favorites, ready to order and pay for right here. Prices and items are controlled from a simple spreadsheet, so the menu and holiday specials update themselves.</p>
+    </div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</section>
+
+<section id="custom">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Want something custom?</h2>
+      <p>Tell us about your event and we'll send you a quote. Once it's priced, you'll get a link to pay by card.</p>
+    </div>
+    <div class="custom-card">
+      <form id="customForm">
+        <div class="form-row">
+          <div class="fld"><label>Your name</label><input name="name" required></div>
+          <div class="fld"><label>Phone or email</label><input name="contact" required></div>
+        </div>
+        <div class="form-row">
+          <div class="fld"><label>Occasion</label><input name="occasion" placeholder="Birthday, wedding, office party..."></div>
+          <div class="fld"><label>Date needed</label><input name="date" type="date"></div>
+        </div>
+        <div class="fld"><label>Tell us what you're dreaming up</label><textarea name="details" placeholder="How many, flavors, colors or theme, any details..."></textarea></div>
+        <button class="btn btn-primary" type="submit" style="width:100%;">Request my quote</button>
+        <p class="custom-note">In the live site this emails your request straight to The Cake Ball Lady. This preview just shows you the confirmation.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
 <section id="how">
   <div class="wrap">
-    <div class="section-head">
-      <h2>How it works</h2>
-      <p>Every order is custom — made to match your event, your colors, and your favorite flavors.</p>
-    </div>
+    <div class="section-head"><h2>How it works</h2></div>
     <div class="steps">
-      <div class="step-card">
-        <div class="num">1</div>
-        <h3>Message your idea</h3>
-        <p>Send a Facebook message with your occasion, date, and how many you need. Prices vary by order — you'll get a quote fast.</p>
-      </div>
-      <div class="step-card">
-        <div class="num">2</div>
-        <h3>Pick flavors &amp; colors</h3>
-        <p>Choose your cake flavors and coating colors — matched to your party theme, team colors, or wedding palette.</p>
-      </div>
-      <div class="step-card">
-        <div class="num">3</div>
-        <h3>Pick up &amp; party</h3>
-        <p>Your cake balls are made fresh for your date and ready for pickup in Evansville. Then the only hard part: sharing.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="occasions">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Any occasion. Really.</h2>
-      <p>If it's worth celebrating, it's worth cake balls.</p>
-    </div>
-    <div class="occ-grid">
-      <span class="occ"><span>&#127874;</span>Birthdays</span>
-      <span class="occ"><span>&#128118;</span>Baby showers</span>
-      <span class="occ"><span>&#128141;</span>Weddings</span>
-      <span class="occ"><span>&#127891;</span>Graduations</span>
-      <span class="occ"><span>&#127876;</span>Holidays</span>
-      <span class="occ"><span>&#127944;</span>Game day</span>
-      <span class="occ"><span>&#128188;</span>Office parties</span>
-      <span class="occ"><span>&#10084;&#65039;</span>Just because</span>
-    </div>
-  </div>
-</section>
-
-<section id="build">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Build your dozen</h2>
-      <p>Tap flavors to fill your box, then send it over — we'll make it real.</p>
-    </div>
-    <div class="builder">
-      <div>
-        <div class="flavors" id="flavorList"></div>
-        <p class="box-note">Don't see your flavor? Just ask — custom requests are the whole point.</p>
-      </div>
-      <div class="box-panel">
-        <h3>Your box</h3>
-        <span class="count"><span id="count">0</span> of 12 picked</span>
-        <div class="dozen" id="dozen" aria-live="polite"></div>
-        <div class="builder-actions">
-          <a class="btn btn-primary" id="sendBox" href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Send my dozen on Facebook</a>
-        </div>
-        <button class="mini-btn" id="resetBox">Start over</button>
-        <p class="box-note" id="copyNote">Your flavor list is copied when you click send — just paste it in the message!</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="order">
-  <div class="wrap">
-    <div class="order-card">
-      <h2>Got a date on the calendar?</h2>
-      <p>Custom orders book up around holidays and party season — message early to lock in your event.</p>
-      <a class="btn" href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Message The Cake Ball Lady</a>
+      <div class="step-card"><div class="num">1</div><h3>Order or request</h3><p>Buy set-price favorites and pay by card in seconds, or send a custom request for anything special.</p></div>
+      <div class="step-card"><div class="num">2</div><h3>We bake it fresh</h3><p>Your cake balls are made to order for your date, matched to your flavors and colors.</p></div>
+      <div class="step-card"><div class="num">3</div><h3>Pick up &amp; party</h3><p>Grab your order in Evansville. Then the only hard part is sharing them.</p></div>
     </div>
   </div>
 </section>
@@ -354,81 +239,132 @@
   <div class="wrap foot">
     <div>
       <div class="fbrand">The Cake Ball Lady</div>
-      Evansville, Indiana · Custom orders by message
+      Evansville, Indiana · Order online or by message
     </div>
-    <div>
-      <a href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Find us on Facebook</a>
-    </div>
+    <div><a href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Find us on Facebook</a></div>
   </div>
 </footer>
 
-<!-- ===== Pitch ribbon (remove this whole block after purchase) ===== -->
-<div class="pitch" id="pitch">
-  <div class="pitch-inner">
-    <span class="pitch-text"><strong>This is a free preview</strong> built just for The Cake Ball Lady. Love it? It can be live &amp; yours this week.</span>
-    <a class="pitch-btn" href="sms:+18124996337">Text Luke — LTG Innovations</a>
-    <button class="pitch-close" aria-label="Dismiss preview banner" onclick="document.getElementById('pitch').style.display='none'">&times;</button>
+<!-- Cart -->
+<div class="overlay" id="overlay"></div>
+<aside class="cart" id="cartDrawer" aria-label="Your order">
+  <div class="cart-head"><h3>Your order</h3><button class="cart-close" id="closeCart" aria-label="Close">&times;</button></div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+    <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
+    <p class="pay-note">Secure card payment. In the live site this is powered by Stripe and goes to The Cake Ball Lady.</p>
+  </div>
+</aside>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="ic" id="modalIc">&#127874;</div>
+    <h3 id="modalTitle"></h3>
+    <p id="modalMsg"></p>
+    <button class="btn btn-primary" id="modalClose">Got it</button>
   </div>
 </div>
-<!-- ===== End pitch ribbon ===== -->
 
 <script>
 (function(){
-  var FLAVORS = [
-    {name:"Classic Chocolate", color:"#5C3A38"},
-    {name:"Birthday Cake",     color:"#F9F1E7"},
-    {name:"Strawberry",        color:"#F2568C"},
-    {name:"Red Velvet",        color:"#B3273F"},
-    {name:"Cookies & Cream",   color:"#8D8D93"},
-    {name:"Lemon",             color:"#FFD666"},
-    {name:"Mint Chocolate",    color:"#7DD8C3"},
-    {name:"Blue Raspberry",    color:"#8FC7F2"}
+  "use strict";
+  // ---- Sample set-price menu (in the live site this loads from her Google Sheet) ----
+  var MENU = [
+    {id:"dozen",   name:"Dozen Cake Balls",     desc:"A classic dozen in the flavor of your choice.",           price:18, color:"#F2568C"},
+    {id:"twodozen",name:"Two Dozen",            desc:"Twice the cake balls for parties and gatherings.",        price:34, color:"#7DD8C3"},
+    {id:"sampler", name:"Flavor Sampler",       desc:"One dozen with a mix of our most-loved flavors.",         price:20, color:"#8FC7F2"},
+    {id:"holiday", name:"Holiday Special Dozen", desc:"Seasonal flavors and festive colors, limited time.",     price:16, was:20, sale:true, color:"#D33B72"},
+    {id:"gift",    name:"Gift Box (half dozen)",desc:"Six cake balls boxed and ribboned, ready to give.",       price:12, color:"#FFD666"},
+    {id:"party",   name:"Party Pack (50)",      desc:"Fifty bite-size cake balls for big celebrations.",        price:70, color:"#5C3A38"}
   ];
-  var picks = [];
-  var list = document.getElementById('flavorList');
-  var dozen = document.getElementById('dozen');
-  var count = document.getElementById('count');
-  var send = document.getElementById('sendBox');
-  var reset = document.getElementById('resetBox');
 
-  FLAVORS.forEach(function(f, i){
-    var b = document.createElement('button');
-    b.className = 'flavor';
-    b.type = 'button';
-    b.innerHTML = '<span class="swatch" style="background:' + f.color + '"></span>' + f.name;
-    b.addEventListener('click', function(){
-      if(picks.length >= 12) return;
-      picks.push(i);
-      render();
-    });
-    list.appendChild(b);
+  var cart = {};
+  var $ = function(id){return document.getElementById(id);};
+  function fmt(n){return "$"+n.toFixed(2);}
+
+  // render shop
+  var grid = $("shopGrid");
+  MENU.forEach(function(m){
+    var el = document.createElement("div");
+    el.className = "item";
+    var priced = '<div class="priced"><span class="price">'+fmt(m.price)+'</span>'+(m.was?'<span class="was">'+fmt(m.was)+'</span>':'')+'</div>';
+    el.innerHTML =
+      '<div class="pic" style="background:linear-gradient(135deg,'+m.color+','+shade(m.color)+')">'+
+        (m.sale?'<span class="sale-flag">Holiday sale</span>':'')+
+        '<span style="text-shadow:0 2px 6px rgba(0,0,0,.2)">'+esc(m.name)+'</span>'+
+      '</div>'+
+      '<div class="body"><h3>'+esc(m.name)+'</h3><p>'+esc(m.desc)+'</p>'+priced+
+      '<button class="add" data-id="'+m.id+'">Add to order</button></div>';
+    grid.appendChild(el);
   });
+  grid.addEventListener("click",function(e){
+    var b = e.target.closest(".add"); if(!b) return;
+    add(b.dataset.id); openCart();
+  });
+
+  function add(id){ cart[id]=(cart[id]||0)+1; render(); }
+  function sub(id){ if(cart[id]){ cart[id]--; if(cart[id]<=0) delete cart[id]; } render(); }
 
   function render(){
-    dozen.innerHTML = '';
-    for(var s = 0; s < 12; s++){
-      var slot = document.createElement('div');
-      slot.className = 'slot' + (s < picks.length ? ' filled' : '');
-      if(s < picks.length) slot.style.background = FLAVORS[picks[s]].color;
-      dozen.appendChild(slot);
-    }
-    count.textContent = picks.length;
+    var items = $("cartItems"); items.innerHTML="";
+    var total=0, count=0, ids=Object.keys(cart);
+    if(!ids.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
+    ids.forEach(function(id){
+      var m = MENU.find(function(x){return x.id===id;}); var q=cart[id];
+      total += m.price*q; count += q;
+      var row=document.createElement("div"); row.className="ci";
+      row.innerHTML='<span class="cidot" style="background:'+m.color+'"></span>'+
+        '<div style="flex:1"><div class="ciname">'+esc(m.name)+'</div>'+
+        '<div class="qty"><button data-sub="'+id+'">&minus;</button><span>'+q+'</span><button data-add="'+id+'">+</button></div></div>'+
+        '<span class="ciprice">'+fmt(m.price*q)+'</span>';
+      items.appendChild(row);
+    });
+    $("cartTotal").textContent = fmt(total);
+    $("cartCount").textContent = count;
+    $("checkoutBtn").disabled = count===0;
   }
-
-  send.addEventListener('click', function(){
-    if(picks.length === 0) return;
-    var tally = {};
-    picks.forEach(function(i){ tally[FLAVORS[i].name] = (tally[FLAVORS[i].name] || 0) + 1; });
-    var lines = Object.keys(tally).map(function(k){ return tally[k] + "x " + k; });
-    var msg = "Hi! I'd love to order a dozen cake balls: " + lines.join(", ") + ". What would that cost?";
-    if(navigator.clipboard){ navigator.clipboard.writeText(msg).catch(function(){}); }
+  $("cartItems").addEventListener("click",function(e){
+    if(e.target.dataset.add) add(e.target.dataset.add);
+    if(e.target.dataset.sub) sub(e.target.dataset.sub);
   });
 
-  reset.addEventListener('click', function(){ picks = []; render(); });
+  // cart open/close
+  function openCart(){ $("cartDrawer").classList.add("open"); $("overlay").classList.add("open"); }
+  function closeCart(){ $("cartDrawer").classList.remove("open"); $("overlay").classList.remove("open"); }
+  $("openCart").addEventListener("click",openCart);
+  $("closeCart").addEventListener("click",closeCart);
+  $("overlay").addEventListener("click",closeCart);
+
+  // checkout (preview)
+  $("checkoutBtn").addEventListener("click",function(){
+    closeCart();
+    showModal("&#128179;","Card checkout goes here","In the finished site, this takes the customer to a secure Stripe card payment for "+$("cartTotal").textContent+", and the money lands in The Cake Ball Lady's account. Orders arrive by email automatically.");
+  });
+
+  // custom form (preview)
+  $("customForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    showModal("&#128233;","Request sent!","Thanks! In the live site this emails your custom request to The Cake Ball Lady, and she'll reply with a quote and a link to pay by card.");
+    e.target.reset();
+  });
+
+  // modal
+  function showModal(ic,title,msg){ $("modalIc").innerHTML=ic; $("modalTitle").textContent=title; $("modalMsg").textContent=msg; $("modal").classList.add("open"); }
+  $("modalClose").addEventListener("click",function(){ $("modal").classList.remove("open"); });
+  $("modal").addEventListener("click",function(e){ if(e.target===$("modal")) $("modal").classList.remove("open"); });
+
+  // helpers
+  function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+  function shade(hex){ // darken a hex color a touch for the gradient
+    var n=parseInt(hex.slice(1),16),r=(n>>16)-30,g=((n>>8)&255)-30,b=(n&255)-30;
+    r=Math.max(0,r);g=Math.max(0,g);b=Math.max(0,b);
+    return "#"+(1<<24|r<<16|g<<8|b).toString(16).slice(1);
+  }
 
   render();
 })();
 </script>
-
 </body>
 </html>
