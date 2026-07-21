@@ -76,6 +76,17 @@
   .item p{font-size:.88rem;color:var(--cocoa-soft);font-weight:600;margin-bottom:12px;flex:1;}
   .item .flavsel{width:100%;padding:9px 10px;border:2px solid #F0E4E0;border-radius:10px;font-family:'Nunito';font-weight:700;font-size:.85rem;background:#FFFDFB;color:var(--cocoa);margin-bottom:12px;}
   .item .flavsel:focus{outline:none;border-color:var(--pink);}
+  .item .flavpick{margin-bottom:12px;}
+  .item .fplabel{font-weight:800;font-size:.78rem;color:var(--cocoa);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+  .item .fcount{color:var(--pink-deep);font-size:.75rem;}
+  .item .fchips{display:flex;flex-wrap:wrap;gap:6px;}
+  .item .fchip{background:#FFFDFB;border:2px solid #F0E4E0;border-radius:999px;padding:6px 11px;font-family:'Nunito';font-weight:700;font-size:.78rem;color:var(--cocoa);cursor:pointer;line-height:1.1;}
+  .item .fchip em{font-style:normal;color:var(--pink-deep);font-size:.66rem;font-weight:800;margin-left:3px;}
+  .item .fchip:hover{border-color:var(--pink);}
+  .item .fchip.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
+  .item .fchip.sel em{color:#FFE3ED;}
+  .item .flavpick.overpick .fplabel{color:var(--pink-deep);animation:nudge .3s ease;}
+  @keyframes nudge{25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
   .item .priced{display:flex;align-items:baseline;gap:5px;margin-bottom:12px;}
   .item .price{font-family:'Baloo 2';font-weight:800;font-size:1.45rem;color:var(--pink-deep);}
   .item .unit{font-size:.85rem;color:var(--cocoa-soft);font-weight:700;}
@@ -304,6 +315,7 @@
       <div class="custom-facts">
         <span class="cf">From $26/dozen</span>
         <span class="cf">2 colors included</span>
+        <span class="cf">2 flavors per dozen</span>
         <span class="cf">2 weeks notice</span>
       </div>
       <form id="customForm">
@@ -406,8 +418,8 @@
 
   // ---------- Shop items ----------
   var MENU = [
-    {id:"balls", name:"Signature Cake Balls", desc:"One dozen, decorated to look like the flavor you pick.", price:24, unit:"/ dozen", flavor:true, color:"#F2568C"},
-    {id:"pops",  name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style.", price:3,  unit:"each",     flavor:true, color:"#7DD8C3"},
+    {id:"balls", name:"Signature Cake Balls", desc:"One dozen — mix up to 6 flavors, each decorated to look like its flavor.", price:24, unit:"/ dozen", flavor:true, maxFlavors:6, color:"#F2568C"},
+    {id:"pops",  name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3"},
     {id:"gs2",   name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, color:"#FFD666"},
     {id:"gs4",   name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",            price:10, unit:"", flavor:false, color:"#8FC7F2"},
     {id:"gc2",   name:"Gift Box · Custom (2-pack)",    desc:"Two cake balls with custom decoration.",             price:6,  unit:"", flavor:false, color:"#F5A9C4"},
@@ -434,9 +446,9 @@
 
   // ---------- FAQ ----------
   var FAQ = [
-    {q:"What's the difference between signature and custom?", a:"Signature cake balls ($24/dozen) are decorated to look like their flavor — vanilla is white, chocolate is brown, red velvet is red, and so on. Custom orders (from $26/dozen) include 2 colors of your choice beyond white and brown, so we can match your theme, event, or team."},
+    {q:"What's the difference between signature and custom?", a:"Signature cake balls ($24/dozen) are decorated to look like their flavor — vanilla is white, chocolate is brown, red velvet is red, and so on — and you can mix up to 6 flavors in a dozen. Custom orders (from $26/dozen) include 2 colors of your choice beyond white and brown and are 2 flavors per dozen, so we can match your theme, event, or team."},
     {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
-    {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order."},
+    {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A signature dozen can mix up to 6 flavors; custom dozens are 2 flavors each."},
     {q:"When and where is pickup?", a:"Pickups are Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. You can request another day or location, which may incur a small extra fee."},
     {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Gift boxes come as 2-packs or 4-packs, in signature ($5 / $10) or custom decoration ($6 / $12)."},
     {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
@@ -450,7 +462,15 @@
   MENU.forEach(function(m){
     var el = document.createElement("div"); el.className="item";
     var flavHtml = "";
-    if(m.flavor){
+    if(m.flavor && m.maxFlavors>1){
+      var chips = orderFlavors().map(function(f){
+        var prem = PREMIUM_THIS_WEEK.indexOf(f)>=0;
+        return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(prem?' <em>premium</em>':'')+'</button>';
+      }).join("");
+      flavHtml = '<div class="flavpick" data-max="'+m.maxFlavors+'" role="group" aria-label="Pick up to '+m.maxFlavors+' flavors for '+esc(m.name)+'">'+
+        '<div class="fplabel">Pick up to '+m.maxFlavors+' flavors <span class="fcount">0/'+m.maxFlavors+'</span></div>'+
+        '<div class="fchips">'+chips+'</div></div>';
+    } else if(m.flavor){
       var opts = orderFlavors().map(function(f){
         var prem = PREMIUM_THIS_WEEK.indexOf(f)>=0;
         return '<option value="'+esc(f)+'">'+esc(f)+(prem?" (premium)":"")+'</option>';
@@ -465,10 +485,29 @@
     grid.appendChild(el);
   });
   grid.addEventListener("click",function(e){
+    var chip=e.target.closest(".fchip");
+    if(chip){ toggleChip(chip); return; }
     var b=e.target.closest(".add"); if(!b) return;
-    var item=b.closest(".item"); var sel=item.querySelector(".flavsel");
-    add(b.dataset.id, sel?sel.value:""); openCart();
+    var item=b.closest(".item");
+    var pick=item.querySelector(".flavpick");
+    var flavors=[];
+    if(pick){
+      flavors=[].slice.call(pick.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");});
+      if(!flavors.length){ pick.classList.remove("overpick"); void pick.offsetWidth; pick.classList.add("overpick"); return; }
+    } else {
+      var sel=item.querySelector(".flavsel");
+      if(sel) flavors=[sel.value];
+    }
+    add(b.dataset.id, flavors); openCart();
   });
+  function toggleChip(chip){
+    var pick=chip.closest(".flavpick"), max=+pick.getAttribute("data-max");
+    var n=pick.querySelectorAll(".fchip.sel").length;
+    if(!chip.classList.contains("sel") && n>=max) return; // at the limit
+    chip.classList.toggle("sel");
+    pick.classList.remove("overpick");
+    pick.querySelector(".fcount").textContent = pick.querySelectorAll(".fchip.sel").length+"/"+max;
+  }
 
   // render flavor chips
   var cc=$("classicChips");
@@ -531,8 +570,8 @@
   }
 
   // cart ops
-  function keyOf(id,flavor){return id+"::"+(flavor||"");}
-  function add(id,flavor){var k=keyOf(id,flavor); if(cart[k])cart[k].qty++; else cart[k]={id:id,flavor:flavor,qty:1}; render();}
+  function keyOf(id,flavors){return id+"::"+(flavors&&flavors.length?flavors.slice().sort().join("|"):"");}
+  function add(id,flavors){var k=keyOf(id,flavors); if(cart[k])cart[k].qty++; else cart[k]={id:id,flavors:flavors||[],qty:1}; render();}
   function chg(k,delta){if(cart[k]){cart[k].qty+=delta; if(cart[k].qty<=0) delete cart[k];} render();}
 
   function render(){
@@ -542,8 +581,9 @@
     keys.forEach(function(k){
       var line=cart[k], m=MENU.find(function(x){return x.id===line.id;});
       total+=m.price*line.qty; count+=line.qty;
-      var dotColor=line.flavor?fColor(line.flavor):m.color;
-      var sub=line.flavor?'<small>'+esc(line.flavor)+'</small>':(m.unit==="/ dozen"?'':'');
+      var flavs=line.flavors||[];
+      var dotColor=flavs.length?fColor(flavs[0]):m.color;
+      var sub=flavs.length?'<small>'+esc(flavs.join(", "))+'</small>':'';
       var row=document.createElement("div"); row.className="ci";
       row.innerHTML='<span class="cidot" style="background:'+dotColor+'"></span>'+
         '<div style="flex:1"><div class="ciname">'+esc(m.name)+sub+'</div>'+
