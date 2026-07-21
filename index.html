@@ -189,6 +189,7 @@
   .pk select:focus{outline:none;border-color:var(--pink);}
   .pk .hint{font-size:.76rem;color:var(--cocoa-soft);font-weight:600;margin-top:4px;min-height:1em;}
   .cart-total{display:flex;justify-content:space-between;font-family:'Baloo 2';font-weight:800;font-size:1.3rem;color:var(--cocoa);margin:6px 0 12px;}
+  .gift-warn{background:#FFF3D6;border:1px solid #EAD9A6;border-radius:10px;padding:9px 12px;font-size:.82rem;color:#7A6420;font-weight:700;margin-bottom:10px;text-align:center;}
   .checkout{width:100%;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:15px;font-family:'Baloo 2';font-weight:800;font-size:1.05rem;cursor:pointer;}
   .checkout:hover{background:var(--pink-deep);}
   .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
@@ -258,6 +259,7 @@
     </div>
     <div class="shop-grid" id="shopGrid"></div>
     <p class="shop-foot">Want colors, themes, or a design of your own? <b>Custom orders start at $26/dozen</b> — <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a quote below</a>.</p>
+    <p class="shop-foot" style="margin-top:8px;font-size:.88rem;">Gift box orders have a <b>$20 minimum</b> (cake balls &amp; pops count toward it).</p>
   </div>
 </section>
 
@@ -379,6 +381,7 @@
       </select>
     </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+    <p class="gift-warn" id="giftNote" hidden></p>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
     <p class="pay-note">Secure card payment. In the live site this is powered by Stripe and goes to The Cake Ball Lady.</p>
   </div>
@@ -420,10 +423,10 @@
   var MENU = [
     {id:"balls", name:"Signature Cake Balls", desc:"One dozen — mix up to 6 flavors, each decorated to look like its flavor.", price:24, unit:"/ dozen", flavor:true, maxFlavors:6, color:"#F2568C"},
     {id:"pops",  name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3"},
-    {id:"gs2",   name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, color:"#FFD666"},
-    {id:"gs4",   name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",            price:10, unit:"", flavor:false, color:"#8FC7F2"},
-    {id:"gc2",   name:"Gift Box · Custom (2-pack)",    desc:"Two cake balls with custom decoration.",             price:6,  unit:"", flavor:false, color:"#F5A9C4"},
-    {id:"gc4",   name:"Gift Box · Custom (4-pack)",    desc:"Four cake balls with custom decoration.",            price:12, unit:"", flavor:false, color:"#D33B72"}
+    {id:"gs2",   name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666"},
+    {id:"gs4",   name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",            price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2"},
+    {id:"gc2",   name:"Gift Box · Custom (2-pack)",    desc:"Two cake balls with custom decoration.",             price:6,  unit:"", flavor:false, gift:true, color:"#F5A9C4"},
+    {id:"gc4",   name:"Gift Box · Custom (4-pack)",    desc:"Four cake balls with custom decoration.",            price:12, unit:"", flavor:false, gift:true, color:"#D33B72"}
   ];
 
   // ---------- Specials (sample; she updates) ----------
@@ -450,7 +453,7 @@
     {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
     {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A signature dozen can mix up to 6 flavors; custom dozens are 2 flavors each."},
     {q:"When and where is pickup?", a:"Pickups are Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. You can request another day or location, which may incur a small extra fee."},
-    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Gift boxes come as 2-packs or 4-packs, in signature ($5 / $10) or custom decoration ($6 / $12)."},
+    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Gift boxes come as 2-packs or 4-packs, in signature ($5 / $10) or custom decoration ($6 / $12). Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
     {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
   ];
 
@@ -576,11 +579,12 @@
 
   function render(){
     var items=$("cartItems"); items.innerHTML="";
-    var total=0,count=0,keys=Object.keys(cart);
+    var total=0,count=0,hasGift=false,keys=Object.keys(cart);
     if(!keys.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
     keys.forEach(function(k){
       var line=cart[k], m=MENU.find(function(x){return x.id===line.id;});
       total+=m.price*line.qty; count+=line.qty;
+      if(m.gift) hasGift=true;
       var flavs=line.flavors||[];
       var dotColor=flavs.length?fColor(flavs[0]):m.color;
       var sub=flavs.length?'<small>'+esc(flavs.join(", "))+'</small>':'';
@@ -593,12 +597,17 @@
     });
     $("cartTotal").textContent=fmt(total);
     $("cartCount").textContent=count;
+    var GIFT_MIN=20, giftMinOk = !hasGift || total>=GIFT_MIN;
+    var note=$("giftNote");
+    if(hasGift && !giftMinOk){ note.hidden=false; note.textContent="Gift boxes need a "+fmt(GIFT_MIN)+" minimum order — add "+fmt(GIFT_MIN-total)+" more."; }
+    else { note.hidden=true; }
     var hasDate=$("pickupDate").value!=="", hasLoc=$("pickupLoc").value!=="";
     var btn=$("checkoutBtn");
-    btn.disabled = count===0 || !hasDate || !hasLoc;
+    btn.disabled = count===0 || !giftMinOk || !hasDate || !hasLoc;
     btn.textContent = count===0 ? "Add something to order"
+      : (!giftMinOk ? "Gift boxes need a $20 minimum"
       : (!hasDate ? "Choose a pickup day"
-      : (!hasLoc ? "Choose a pickup location" : "Checkout & pay by card"));
+      : (!hasLoc ? "Choose a pickup location" : "Checkout & pay by card")));
   }
   $("cartItems").addEventListener("click",function(e){
     var b=e.target.closest("button[data-k]"); if(!b) return;
