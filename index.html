@@ -82,6 +82,17 @@
   .soldout{opacity:.55;}
   .soldout .add{background:#C9B9BC;cursor:not-allowed;}
 
+  /* Gallery */
+  #gallery{background:var(--white);}
+  .gal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:820px){.gal-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:480px){.gal-grid{grid-template-columns:1fr 1fr;}}
+  .gtile{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1/1;display:grid;place-items:end start;border:2px solid #F5E6EA;}
+  .gtile .cap{position:relative;z-index:1;color:#fff;font-weight:800;font-size:.85rem;padding:12px 14px;text-shadow:0 1px 4px rgba(0,0,0,.35);line-height:1.2;}
+  .gtile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(74,44,42,.5));}
+  .gtile .cb{position:absolute;border-radius:50%;box-shadow:inset -6px -6px 0 rgba(0,0,0,.12);}
+  .gal-note{text-align:center;margin-top:26px;color:var(--cocoa-soft);font-weight:600;font-size:.92rem;}
+
   /* Custom order */
   #custom{background:var(--blush);}
   .custom-card{background:#fff;border-radius:24px;padding:36px;max-width:680px;margin:0 auto;border:2px solid #F5D9E1;}
@@ -127,7 +138,12 @@
   .ci .qty{display:flex;align-items:center;gap:8px;margin-top:3px;}
   .ci .qty button{width:24px;height:24px;border-radius:50%;border:1px solid #E7D3D8;background:#fff;cursor:pointer;font-weight:800;color:var(--pink-deep);line-height:1;}
   .ci .qty span{font-weight:800;font-size:.9rem;min-width:16px;text-align:center;}
-  .cart-foot{padding:20px 22px;border-top:1px solid #F5E6EA;}
+  .cart-foot{padding:18px 22px;border-top:1px solid #F5E6EA;}
+  .pickup-field{margin-bottom:14px;}
+  .pickup-field label{display:block;font-weight:800;font-size:.82rem;color:var(--cocoa);margin-bottom:5px;}
+  .pickup-field select{width:100%;padding:11px 12px;border:2px solid #F0E4E0;border-radius:12px;font-family:'Nunito';font-weight:700;font-size:.92rem;background:#FFFDFB;color:var(--cocoa);}
+  .pickup-field select:focus{outline:none;border-color:var(--pink);}
+  .pickup-field .cutoff{font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin-top:5px;min-height:1em;}
   .cart-total{display:flex;justify-content:space-between;font-family:'Baloo 2';font-weight:800;font-size:1.3rem;color:var(--cocoa);margin-bottom:14px;}
   .checkout{width:100%;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:15px;font-family:'Baloo 2';font-weight:800;font-size:1.1rem;cursor:pointer;}
   .checkout:hover{background:var(--pink-deep);}
@@ -153,6 +169,7 @@
     <a class="brand" href="#top"><span class="dot"></span>The Cake Ball Lady</a>
     <div class="nav-links">
       <a href="#shop">Shop</a>
+      <a href="#gallery">Gallery</a>
       <a href="#custom">Custom Orders</a>
       <a href="#how">How It Works</a>
       <button class="nav-cart" id="openCart">Order <span class="badge" id="cartCount">0</span></button>
@@ -197,6 +214,17 @@
       <p>Set-price favorites, ready to order and pay for right here. Prices and items are controlled from a simple spreadsheet, so the menu and holiday specials update themselves.</p>
     </div>
     <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Custom order inspiration</h2>
+      <p>A few of our favorite custom bakes. Yours can match any theme, color, or occasion — these are just to get you dreaming.</p>
+    </div>
+    <div class="gal-grid" id="galGrid"></div>
+    <p class="gal-note">These are sample tiles. In the live site, this gallery fills with your real photos — just drop them in a shared folder and they show up here.</p>
   </div>
 </section>
 
@@ -251,6 +279,11 @@
   <div class="cart-head"><h3>Your order</h3><button class="cart-close" id="closeCart" aria-label="Close">&times;</button></div>
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-foot">
+    <div class="pickup-field">
+      <label for="pickupDate">Pickup date</label>
+      <select id="pickupDate"><option value="">Choose a pickup date…</option></select>
+      <div class="cutoff" id="pickupCutoff"></div>
+    </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
     <p class="pay-note">Secure card payment. In the live site this is powered by Stripe and goes to The Cake Ball Lady.</p>
@@ -280,6 +313,26 @@
     {id:"party",   name:"Party Pack (50)",      desc:"Fifty bite-size cake balls for big celebrations.",        price:70, color:"#5C3A38"}
   ];
 
+  // ---- Sample gallery of custom ideas (live site pulls her real photos) ----
+  var GALLERY = [
+    {cap:"Baby shower · pastels",     bg:["#FFD1DC","#8FC7F2"], dots:["#F2568C","#8FC7F2","#FFD666"]},
+    {cap:"Wedding · gold & white",    bg:["#FBEFD2","#F5E6EA"], dots:["#FFD666","#FFFDFB","#E8C98C"]},
+    {cap:"Game day · team colors",    bg:["#8FB7E8","#3A4A8C"], dots:["#8FC7F2","#FFD666","#5C3A38"]},
+    {cap:"Birthday · rainbow",        bg:["#FFB3C6","#7DD8C3"], dots:["#F2568C","#FFD666","#7DD8C3","#8FC7F2"]},
+    {cap:"Fall · caramel & spice",    bg:["#E9B872","#8A5A2B"], dots:["#8A5A2B","#E9B872","#5C3A38"]},
+    {cap:"Valentine's · pink hearts", bg:["#F8A5C2","#D33B72"], dots:["#F2568C","#FFFDFB","#D33B72"]},
+    {cap:"Christmas · red & green",   bg:["#E86A6A","#4C9A6A"], dots:["#E86A6A","#4C9A6A","#FFFDFB"]},
+    {cap:"Graduation · cap & gown",   bg:["#5C6BC0","#2A2F55"], dots:["#FFD666","#5C6BC0","#FFFDFB"]}
+  ];
+
+  // ---- Sample open pickup dates (live site: she opens/closes these from her sheet) ----
+  var PICKUP_DATES = [
+    {label:"Sat, Jul 26 (weekly)",     cutoff:"Order by Thu, Jul 24"},
+    {label:"Sat, Aug 2 (weekly)",      cutoff:"Order by Thu, Jul 31"},
+    {label:"Sat, Aug 9 (weekly)",      cutoff:"Order by Thu, Aug 7"},
+    {label:"Sun, Aug 31 · Labor Day",  cutoff:"Holiday batch · order by Aug 27"}
+  ];
+
   var cart = {};
   var $ = function(id){return document.getElementById(id);};
   function fmt(n){return "$"+n.toFixed(2);}
@@ -304,6 +357,35 @@
     add(b.dataset.id); openCart();
   });
 
+  // render gallery
+  var galGrid = $("galGrid");
+  var DOT_POS = [[8,10,44],[52,6,34],[14,54,38],[58,50,40],[34,30,30]];
+  GALLERY.forEach(function(g){
+    var t = document.createElement("div");
+    t.className = "gtile";
+    t.style.background = "linear-gradient(135deg,"+g.bg[0]+","+g.bg[1]+")";
+    var dots = "";
+    g.dots.forEach(function(c,i){
+      var p = DOT_POS[i % DOT_POS.length];
+      dots += '<span class="cb" style="background:'+c+';left:'+p[0]+'%;top:'+p[1]+'%;width:'+p[2]+'%;height:'+p[2]+'%"></span>';
+    });
+    t.innerHTML = dots + '<span class="cap">'+esc(g.cap)+'</span>';
+    galGrid.appendChild(t);
+  });
+
+  // populate pickup dates
+  var pickupSel = $("pickupDate");
+  PICKUP_DATES.forEach(function(d,i){
+    var o = document.createElement("option");
+    o.value = String(i); o.textContent = d.label;
+    pickupSel.appendChild(o);
+  });
+  pickupSel.addEventListener("change",function(){
+    var d = PICKUP_DATES[pickupSel.value];
+    $("pickupCutoff").textContent = d ? d.cutoff : "";
+    render();
+  });
+
   function add(id){ cart[id]=(cart[id]||0)+1; render(); }
   function sub(id){ if(cart[id]){ cart[id]--; if(cart[id]<=0) delete cart[id]; } render(); }
 
@@ -323,7 +405,10 @@
     });
     $("cartTotal").textContent = fmt(total);
     $("cartCount").textContent = count;
-    $("checkoutBtn").disabled = count===0;
+    var hasDate = $("pickupDate").value !== "";
+    var btn = $("checkoutBtn");
+    btn.disabled = count===0 || !hasDate;
+    btn.textContent = (count>0 && !hasDate) ? "Choose a pickup date" : "Checkout & pay by card";
   }
   $("cartItems").addEventListener("click",function(e){
     if(e.target.dataset.add) add(e.target.dataset.add);
@@ -339,8 +424,9 @@
 
   // checkout (preview)
   $("checkoutBtn").addEventListener("click",function(){
+    var d = PICKUP_DATES[$("pickupDate").value];
     closeCart();
-    showModal("&#128179;","Card checkout goes here","In the finished site, this takes the customer to a secure Stripe card payment for "+$("cartTotal").textContent+", and the money lands in The Cake Ball Lady's account. Orders arrive by email automatically.");
+    showModal("&#128179;","Card checkout goes here","In the finished site, this takes the customer to a secure Stripe card payment for "+$("cartTotal").textContent+" with pickup on "+(d?d.label:"the chosen date")+". The money lands in The Cake Ball Lady's account, and the order (with pickup date) arrives by email automatically.");
   });
 
   // custom form (preview)
