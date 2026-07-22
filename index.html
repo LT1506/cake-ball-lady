@@ -354,7 +354,8 @@
     <div>
       <h4>Pickup</h4>
       <p>Thursdays, Fridays &amp; Saturdays</p>
-      <p>Porch Pickup or Locally Loved Boutique</p>
+      <p>Porch Pickup — ready by noon that day</p>
+      <p>Locally Loved Boutique — during store hours</p>
       <p>Other days/locations by request (may incur a fee)</p>
     </div>
   </div>
@@ -379,6 +380,7 @@
         <option>Locally Loved Boutique</option>
         <option>Request another location (may incur a fee)</option>
       </select>
+      <div class="hint" id="locHint"></div>
     </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
     <p class="gift-warn" id="giftNote" hidden></p>
@@ -558,7 +560,8 @@
     o.value=label; o.textContent=label; pickupSel.appendChild(o);
   });
   pickupSel.addEventListener("change",render);
-  $("pickupLoc").addEventListener("change",render);
+  var LOC_NOTES={"Porch Pickup":"Ready by noon that day.","Locally Loved Boutique":"Available during the boutique's store hours.","Request another location (may incur a fee)":"We'll confirm the time and any fee with you."};
+  $("pickupLoc").addEventListener("change",function(){ $("locHint").textContent = LOC_NOTES[$("pickupLoc").value]||""; render(); });
 
   function upcomingPickups(n){
     var days=[4,5,6], out=[], d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+1);
@@ -624,8 +627,9 @@
   // checkout (preview)
   $("checkoutBtn").addEventListener("click",function(){
     var date=$("pickupDate").value, loc=$("pickupLoc").value;
+    var locNote=LOC_NOTES[loc]?(" ("+LOC_NOTES[loc].replace(/\.$/,"")+")"):"";
     closeCart();
-    showModal("&#128179;","Card checkout goes here","In the finished site this is a secure Stripe card payment for "+$("cartTotal").textContent+", picking up "+date+" at "+loc+". The money goes to The Cake Ball Lady, and the order (flavors, pickup day & location) arrives by email automatically.");
+    showModal("&#128179;","Card checkout goes here","In the finished site this is a secure Stripe card payment for "+$("cartTotal").textContent+", picking up "+date+" at "+loc+locNote+". The money goes to The Cake Ball Lady, and the order (flavors, pickup day & location) arrives by email automatically.");
   });
 
   // custom form (preview)
