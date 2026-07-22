@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Cake Ball Lady — Cake Balls &amp; Cake Pops in Evansville, IN</title>
 <meta name="description" content="Signature and custom cake balls and cake pops in Evansville, Indiana. Order online, pick your flavors and pickup date, and pay by card.">
+<meta name="theme-color" content="#F2568C">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%A7%81</text></svg>">
+<!-- Social share / Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Cake Ball Lady — Cake Balls &amp; Cake Pops in Evansville, IN">
+<meta property="og:description" content="Signature and custom cake balls and cake pops in Evansville, Indiana. Order online, pick your flavors and pickup day, and pay by card.">
+<meta property="og:url" content="https://lt1506.github.io/cake-ball-lady/">
+<meta property="og:image" content="https://lt1506.github.io/cake-ball-lady/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Cake Ball Lady — Cake Balls &amp; Cake Pops in Evansville, IN">
+<meta name="twitter:description" content="Signature and custom cake balls in Evansville, IN. Order online and pay by card.">
+<meta name="twitter:image" content="https://lt1506.github.io/cake-ball-lady/og-cover.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -34,7 +48,6 @@
   .nav-cart{background:var(--pink);color:#fff !important;padding:9px 18px;border-radius:999px;position:relative;border:none;cursor:pointer;font-family:'Nunito';font-weight:800;font-size:.92rem;}
   .nav-cart:hover{background:var(--pink-deep);}
   .nav-cart .badge{background:#fff;color:var(--pink-deep);border-radius:999px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:800;}
-  @media(max-width:760px){.nav-links a:not(.nav-cart){display:none;}}
 
   header{padding:60px 0 44px;background:radial-gradient(circle 300px at 90% 10%,var(--blush) 0%,transparent 70%),radial-gradient(circle 240px at 5% 90%,#EFFAF6 0%,transparent 70%),var(--white);}
   .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;}
@@ -201,6 +214,62 @@
   .modal .box .ic{font-size:2.4rem;margin-bottom:8px;}
   .modal .box h3{font-size:1.5rem;margin-bottom:8px;}
   .modal .box p{color:var(--cocoa-soft);font-weight:600;font-size:.95rem;margin-bottom:20px;}
+
+  /* ---- Mobile nav dropdown ---- */
+  .nav-right{display:flex;align-items:center;gap:14px;}
+  .nav-toggle{display:none;background:none;border:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--cocoa);padding:2px 6px;}
+  @media(max-width:760px){
+    .nav-toggle{display:block;}
+    .nav-links{position:absolute;top:100%;left:0;right:0;background:var(--white);flex-direction:column;align-items:stretch;gap:0;padding:6px 24px 14px;border-bottom:1px solid #F5E6EA;display:none;box-shadow:0 12px 24px rgba(74,44,42,.10);}
+    .nav-links.open{display:flex;}
+    .nav-links a{padding:12px 2px;border-bottom:1px solid #F7EAEE;}
+  }
+
+  /* ---- Cute animations & micro-interactions ---- */
+  .btn-primary{transition:transform .15s ease,background .15s ease,box-shadow .2s ease;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(242,86,140,.42);}
+  .add,.checkout,.nav-cart{transition:transform .14s ease,background .15s ease;}
+  .add:hover{transform:translateY(-1px);}
+  .add:active,.checkout:active,.nav-cart:active{transform:scale(.96);}
+
+  @keyframes badgePop{0%{transform:scale(1);}40%{transform:scale(1.4);}100%{transform:scale(1);}}
+  .nav-cart .badge{display:inline-block;}
+  .nav-cart .badge.pop{animation:badgePop .35s ease;}
+
+  @keyframes chipPop{0%{transform:scale(1);}45%{transform:scale(1.15);}100%{transform:scale(1);}}
+  .item .fchip.justsel{animation:chipPop .28s ease;}
+
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+  .reveal.in{opacity:1;transform:none;}
+
+  @keyframes ciIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:none;}}
+  .ci{animation:ciIn .28s ease both;}
+
+  .stack{position:relative;}
+  .sprinkle{position:absolute;border-radius:2px;opacity:.5;pointer-events:none;will-change:transform;animation:drift linear infinite;}
+  @keyframes drift{0%{transform:translateY(0) rotate(0);}50%{transform:translateY(-14px) rotate(180deg);}100%{transform:translateY(0) rotate(360deg);}}
+  .stack svg{transition:transform .4s ease;}
+  .stack:hover svg{transform:scale(1.03) rotate(-1deg);}
+
+  .modal{background:rgba(74,44,42,0);transition:background .2s ease;}
+  .modal.open{background:rgba(74,44,42,.45);}
+  @keyframes modalPop{0%{opacity:0;transform:scale(.92) translateY(8px);}60%{transform:scale(1.02);}100%{opacity:1;transform:none;}}
+  .modal.open .box{animation:modalPop .3s cubic-bezier(.2,.8,.3,1) both;}
+
+  .gtile .cb,.gtile .cap{transition:transform .3s ease;}
+  .gtile:hover .cb{transform:scale(1.08);}
+  .gtile:hover .cap{transform:translateY(-3px);}
+
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1 !important;transform:none !important;transition:none !important;}
+    .sprinkle,.confetti-piece{display:none !important;}
+    .nav-cart .badge.pop,.item .fchip.justsel,.ci{animation:none !important;}
+    .modal.open .box{animation:none !important;}
+    .stack:hover svg{transform:none !important;}
+    .btn-primary:hover{transform:none;}
+    .item .flavpick.overpick .fplabel{animation:none !important;}
+    .faq summary::after{transition:none !important;}
+  }
 </style>
 </head>
 <body>
@@ -210,13 +279,16 @@
 <nav>
   <div class="nav-inner">
     <a class="brand" href="#top"><span class="dot"></span>The Cake Ball Lady</a>
-    <div class="nav-links">
-      <a href="#shop">Shop</a>
-      <a href="#flavors">Flavors</a>
-      <a href="#specials">Specials</a>
-      <a href="#gallery">Gallery</a>
-      <a href="#faq">FAQ</a>
+    <div class="nav-right">
+      <div class="nav-links" id="navLinks">
+        <a href="#shop">Shop</a>
+        <a href="#flavors">Flavors</a>
+        <a href="#specials">Specials</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#faq">FAQ</a>
+      </div>
       <button class="nav-cart" id="openCart">Order <span class="badge" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">☰</button>
     </div>
   </div>
 </nav>
@@ -405,6 +477,27 @@
   function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML;}
   function fmt(n){return "$"+(Math.round(n*100)/100).toFixed(2);}
 
+  // motion + confetti
+  var RM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion:reduce)") : {matches:false};
+  function motionOK(){ return !RM.matches; }
+  var CONFETTI_COLORS=["#F2568C","#7DD8C3","#FFD666","#8FC7F2","#D33B72"];
+  function confettiBurst(x,y){
+    if(!motionOK() || !("animate" in Element.prototype)) return;
+    for(var i=0;i<14;i++){
+      var p=document.createElement("div");
+      p.className="confetti-piece";
+      p.style.cssText="position:fixed;left:"+x+"px;top:"+y+"px;width:8px;height:8px;border-radius:"+(i%2?"50%":"2px")+";background:"+CONFETTI_COLORS[i%5]+";z-index:100;pointer-events:none;will-change:transform,opacity;";
+      document.body.appendChild(p);
+      var ang=Math.random()*Math.PI*2, dist=40+Math.random()*55;
+      var dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist-30;
+      var a=p.animate([
+        {transform:"translate(0,0) rotate(0) scale(1)",opacity:1},
+        {transform:"translate("+dx+"px,"+(dy+70)+"px) rotate("+(Math.random()*540-270)+"deg) scale(.4)",opacity:0}
+      ],{duration:650+Math.random()*250,easing:"cubic-bezier(.2,.7,.3,1)"});
+      a.onfinish=function(){ this.effect.target.remove(); };
+    }
+  }
+
   // ---------- Flavors ----------
   var CLASSIC = ["Chocolate","Vanilla","Funfetti","Strawberry","Lemon","Red Velvet","Cookies'n Cream","Cinnamon Crumb"];
   var PREMIUM = ["Banana Pudding","Lemon Blueberry","White Chocolate Raspberry","S'mores","Salted Caramel Chocolate","Chocolate Fudge Brownie","Coconut Cream","Biscoff Cookie Butter","Carrot Cake"];
@@ -503,7 +596,10 @@
       var sel=item.querySelector(".flavsel");
       if(sel) flavors=[sel.value];
     }
-    add(b.dataset.id, flavors); openCart();
+    var r=b.getBoundingClientRect();
+    add(b.dataset.id, flavors);
+    confettiBurst(r.left+r.width/2, r.top+r.height/2);
+    openCart();
   });
   function toggleChip(chip){
     var pick=chip.closest(".flavpick"), max=+pick.getAttribute("data-max");
@@ -511,6 +607,7 @@
     if(!chip.classList.contains("sel") && n>=max) return; // at the limit
     chip.classList.toggle("sel");
     pick.classList.remove("overpick");
+    if(motionOK() && chip.classList.contains("sel")){ chip.classList.remove("justsel"); void chip.offsetWidth; chip.classList.add("justsel"); }
     pick.querySelector(".fcount").textContent = pick.querySelectorAll(".fchip.sel").length+"/"+max;
   }
 
@@ -584,7 +681,7 @@
     var items=$("cartItems"); items.innerHTML="";
     var total=0,count=0,hasGift=false,keys=Object.keys(cart);
     if(!keys.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
-    keys.forEach(function(k){
+    keys.forEach(function(k,ix){
       var line=cart[k], m=MENU.find(function(x){return x.id===line.id;});
       total+=m.price*line.qty; count+=line.qty;
       if(m.gift) hasGift=true;
@@ -592,6 +689,7 @@
       var dotColor=flavs.length?fColor(flavs[0]):m.color;
       var sub=flavs.length?'<small>'+esc(flavs.join(", "))+'</small>':'';
       var row=document.createElement("div"); row.className="ci";
+      if(motionOK()) row.style.animationDelay=(Math.min(ix,6)*40)+"ms";
       row.innerHTML='<span class="cidot" style="background:'+dotColor+'"></span>'+
         '<div style="flex:1"><div class="ciname">'+esc(m.name)+sub+'</div>'+
         '<div class="qty"><button data-k="'+k+'" data-d="-1">&minus;</button><span>'+line.qty+'</span><button data-k="'+k+'" data-d="1">+</button></div></div>'+
@@ -599,7 +697,9 @@
       items.appendChild(row);
     });
     $("cartTotal").textContent=fmt(total);
-    $("cartCount").textContent=count;
+    var badge=$("cartCount"), prevCount=+badge.textContent;
+    badge.textContent=count;
+    if(motionOK() && count!==prevCount){ badge.classList.remove("pop"); void badge.offsetWidth; badge.classList.add("pop"); }
     var GIFT_MIN=20, giftMinOk = !hasGift || total>=GIFT_MIN;
     var note=$("giftNote");
     if(hasGift && !giftMinOk){ note.hidden=false; note.textContent="Gift boxes need a "+fmt(GIFT_MIN)+" minimum order — add "+fmt(GIFT_MIN-total)+" more."; }
@@ -618,8 +718,9 @@
   });
 
   // open/close cart
-  function openCart(){$("cartDrawer").classList.add("open");$("overlay").classList.add("open");}
-  function closeCart(){$("cartDrawer").classList.remove("open");$("overlay").classList.remove("open");}
+  var lastFocus=null;
+  function openCart(){ lastFocus=document.activeElement; $("cartDrawer").classList.add("open");$("overlay").classList.add("open"); $("closeCart").focus(); }
+  function closeCart(){ $("cartDrawer").classList.remove("open");$("overlay").classList.remove("open"); if(lastFocus&&lastFocus.focus){lastFocus.focus();} lastFocus=null; }
   $("openCart").addEventListener("click",openCart);
   $("closeCart").addEventListener("click",closeCart);
   $("overlay").addEventListener("click",closeCart);
@@ -640,14 +741,37 @@
   });
 
   // modal
-  function showModal(ic,title,msg){$("modalIc").innerHTML=ic;$("modalTitle").textContent=title;$("modalMsg").textContent=msg;$("modal").classList.add("open");}
+  function showModal(ic,title,msg){$("modalIc").innerHTML=ic;$("modalTitle").textContent=title;$("modalMsg").textContent=msg;$("modal").classList.add("open");$("modalClose").focus();}
   $("modalClose").addEventListener("click",function(){$("modal").classList.remove("open");});
   $("modal").addEventListener("click",function(e){if(e.target===$("modal"))$("modal").classList.remove("open");});
   document.addEventListener("keydown",function(e){ if(e.key==="Escape"){ closeCart(); $("modal").classList.remove("open"); } });
 
   function shade(hex){var n=parseInt(hex.slice(1),16),r=Math.max(0,(n>>16)-30),g=Math.max(0,((n>>8)&255)-30),b=Math.max(0,(n&255)-30);return "#"+(1<<24|r<<16|g<<8|b).toString(16).slice(1);}
 
+  // ---- Enhancements: scroll reveal, hero sprinkles, mobile nav, form date guard ----
+  function setupReveal(){
+    if(!motionOK() || !("IntersectionObserver" in window)) return;
+    var obs=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); obs.unobserve(e.target); } }); },{threshold:.12,rootMargin:"0px 0px -8% 0px"});
+    [].forEach.call(document.querySelectorAll(".item,.flav-card,.special,.gtile,.faq"),function(el,i){ el.classList.add("reveal"); el.style.transitionDelay=((i%4)*60)+"ms"; obs.observe(el); });
+  }
+  function setupSprinkles(){
+    if(!motionOK()) return;
+    var stack=document.querySelector(".stack"); if(!stack) return;
+    var S=[["#FFD666",12,18,7],["#7DD8C3",78,26,6],["#8FC7F2",22,72,6],["#F2568C",70,80,5],["#FFD666",50,8,5],["#7DD8C3",90,60,5]];
+    S.forEach(function(s,i){ var d=document.createElement("span"); d.className="sprinkle"; d.style.cssText="background:"+s[0]+";left:"+s[1]+"%;top:"+s[2]+"%;width:"+s[3]+"px;height:"+s[3]+"px;animation-duration:"+(6+i)+"s;animation-delay:"+(i*.6)+"s;"; stack.appendChild(d); });
+  }
+  function setupNav(){
+    var t=$("navToggle"), links=$("navLinks"); if(!t||!links) return;
+    t.addEventListener("click",function(){ var open=links.classList.toggle("open"); t.setAttribute("aria-expanded",open?"true":"false"); });
+    links.addEventListener("click",function(e){ if(e.target.tagName==="A"){ links.classList.remove("open"); t.setAttribute("aria-expanded","false"); } });
+  }
+  function setupFormMin(){
+    var el=$("cf-date"); if(!el) return;
+    var d=new Date(); d.setDate(d.getDate()+14); el.min=d.toISOString().slice(0,10);
+  }
+
   render();
+  setupReveal(); setupSprinkles(); setupNav(); setupFormMin();
 })();
 </script>
 </body>
