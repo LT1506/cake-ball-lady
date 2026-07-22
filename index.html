@@ -330,7 +330,7 @@
       <p>Pick your flavor, add to your order, and choose a pickup day at checkout. Signature style means each cake ball is decorated to look like its flavor.</p>
     </div>
     <div class="shop-grid" id="shopGrid"></div>
-    <p class="shop-foot">Want colors, themes, or a design of your own? <b>Custom orders start at $26/dozen</b> — <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a quote below</a>.</p>
+    <p class="shop-foot">Want custom colors, a theme, or custom-decoration gift boxes? <b>Custom orders start at $26/dozen</b> — <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a quote below</a>.</p>
     <p class="shop-foot" style="margin-top:8px;font-size:.88rem;">Gift box orders have a <b>$20 minimum</b> (cake balls &amp; pops count toward it).</p>
   </div>
 </section>
@@ -383,13 +383,14 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Custom orders</h2>
-      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card.</p>
+      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes (2- or 4-packs) are ordered here too.</p>
     </div>
     <div class="custom-card">
       <div class="custom-facts">
         <span class="cf">From $26/dozen</span>
         <span class="cf">2 colors included</span>
         <span class="cf">2 flavors per dozen</span>
+        <span class="cf">Custom gift boxes</span>
         <span class="cf">2 weeks notice</span>
       </div>
       <form id="customForm">
@@ -425,7 +426,8 @@
     </div>
     <div>
       <h4>Pickup</h4>
-      <p>Thursdays, Fridays &amp; Saturdays</p>
+      <p>Wednesday, Thursday, Friday &amp; Saturday</p>
+      <p>Orders close 2 days before pickup (5pm)</p>
       <p>Porch Pickup — ready by noon that day</p>
       <p>Locally Loved Boutique — during store hours</p>
       <p>Other days/locations by request (may incur a fee)</p>
@@ -442,7 +444,7 @@
     <div class="pk">
       <label for="pickupDate">Pickup day</label>
       <select id="pickupDate"><option value="">Choose a pickup day…</option></select>
-      <div class="hint">We bake for Thursday, Friday &amp; Saturday pickups.</div>
+      <div class="hint">Pickups Wed–Sat. Orders close 2 days before, at 5pm.</div>
     </div>
     <div class="pk">
       <label for="pickupLoc">Pickup location</label>
@@ -516,16 +518,17 @@
 
   // ---------- Shop items ----------
   var MENU = [
-    {id:"balls", name:"Signature Cake Balls", desc:"One dozen — mix up to 6 flavors, each decorated to look like its flavor.", price:24, unit:"/ dozen", flavor:true, maxFlavors:6, color:"#F2568C"},
-    {id:"pops",  name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3"},
-    {id:"gs2",   name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666"},
-    {id:"gs4",   name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",            price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2"},
-    {id:"gc2",   name:"Gift Box · Custom (2-pack)",    desc:"Two cake balls with custom decoration.",             price:6,  unit:"", flavor:false, gift:true, color:"#F5A9C4"},
-    {id:"gc4",   name:"Gift Box · Custom (4-pack)",    desc:"Four cake balls with custom decoration.",            price:12, unit:"", flavor:false, gift:true, color:"#D33B72"}
+    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C"},
+    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F"},
+    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72"},
+    {id:"pops",   name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3"},
+    {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666"},
+    {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2"}
   ];
 
   // ---------- Specials (sample; she updates) ----------
   var SPECIALS = [
+    {tag:"Special", title:"Assortment Box", body:"A bigger box with an extra-wide mix of flavors — offered as a limited special. Ask what's in this week's assortment.", holiday:false, color:"linear-gradient(135deg,#7DD8C3,#3E9E8A)"},
     {tag:"Seasonal special", title:"IU Tailgate Cake Balls", body:"Cream & crimson for game weekends — perfect for tailgates and watch parties.", holiday:false, color:"linear-gradient(135deg,#A11833,#6E0F22)"},
     {tag:"Order ahead", title:"Coming up: Labor Day", body:"Holiday batches book about 3–4 weeks out. Get your order in early to reserve your date.", holiday:true}
   ];
@@ -544,11 +547,11 @@
 
   // ---------- FAQ ----------
   var FAQ = [
-    {q:"What's the difference between signature and custom?", a:"Signature cake balls ($24/dozen) are decorated to look like their flavor — vanilla is white, chocolate is brown, red velvet is red, and so on — and you can mix up to 6 flavors in a dozen. Custom orders (from $26/dozen) include 2 colors of your choice beyond white and brown and are 2 flavors per dozen, so we can match your theme, event, or team."},
+    {q:"What's the difference between signature and custom?", a:"Signature cake balls are decorated to look like their flavor — vanilla is white, chocolate is brown, red velvet is red, and so on. They come in Small (1 dozen, $24, up to 4 flavors), Medium (2 dozen, $48) and Large (3 dozen, $72) boxes, with up to 6 flavors in the Medium and Large. Custom orders (from $26/dozen) include 2 colors of your choice beyond white and brown and are 2 flavors per dozen, so we can match your theme, event, or team."},
     {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
-    {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A signature dozen can mix up to 6 flavors; custom dozens are 2 flavors each."},
-    {q:"When and where is pickup?", a:"Pickups are Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. You can request another day or location, which may incur a small extra fee."},
-    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Gift boxes come as 2-packs or 4-packs, in signature ($5 / $10) or custom decoration ($6 / $12). Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
+    {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A Small box (1 dozen) can mix up to 4 flavors; Medium and Large boxes up to 6; custom dozens are 2 flavors each."},
+    {q:"When and where is pickup?", a:"Pickups are Wednesdays, Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. Ordering for each day closes 2 days before at 5pm (so Wednesday pickups close Monday at 5pm, Thursday closes Tuesday, and so on). You can request another day or location, which may incur a small extra fee."},
+    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
     {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
   ];
 
@@ -661,9 +664,18 @@
   $("pickupLoc").addEventListener("change",function(){ $("locHint").textContent = LOC_NOTES[$("pickupLoc").value]||""; render(); });
 
   function upcomingPickups(n){
-    var days=[4,5,6], out=[], d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+1);
+    // Pickup days Wed(3),Thu(4),Fri(5),Sat(6). A date stays available until 5pm
+    // two days before it (Mon 5pm closes Wed, Tue 5pm closes Thu, etc.).
+    var days=[3,4,5,6], out=[], now=new Date();
+    var d=new Date(); d.setHours(0,0,0,0);
     var guard=0;
-    while(out.length<n && guard<120){ if(days.indexOf(d.getDay())>=0) out.push(new Date(d)); d.setDate(d.getDate()+1); guard++; }
+    while(out.length<n && guard<180){
+      if(days.indexOf(d.getDay())>=0){
+        var cutoff=new Date(d); cutoff.setDate(cutoff.getDate()-2); cutoff.setHours(17,0,0,0);
+        if(now < cutoff) out.push(new Date(d));
+      }
+      d.setDate(d.getDate()+1); guard++;
+    }
     return out;
   }
   function fmtDate(d){
