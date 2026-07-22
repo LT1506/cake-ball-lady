@@ -37,6 +37,8 @@
 
   .preview-strip{background:var(--cocoa);color:#FFE9EF;text-align:center;font-size:.86rem;font-weight:600;padding:8px 16px;}
   .preview-strip b{color:var(--butter);}
+  .sale-bar{background:linear-gradient(90deg,var(--pink),var(--pink-deep));color:#fff;text-align:center;font-weight:800;font-size:.95rem;padding:11px 18px;}
+  .sale-bar b{color:var(--butter);}
 
   nav{position:sticky;top:0;z-index:50;background:rgba(255,253,251,.95);backdrop-filter:blur(8px);border-bottom:1px solid #F5E6EA;}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;max-width:1040px;margin:0 auto;}
@@ -275,6 +277,8 @@
 <body>
 
 <div class="preview-strip"><b>Preview</b> for The Cake Ball Lady — card checkout goes live once your payment account is connected. Real prices &amp; flavors shown; sample weekly flavors, specials &amp; photos.</div>
+
+<div class="sale-bar" id="saleBar" hidden></div>
 
 <nav>
   <div class="nav-inner">
@@ -630,15 +634,25 @@
   }
   buildFlavorChips();
 
-  // render specials
+  // render specials + sale banner
   var sg=$("specGrid");
-  SPECIALS.forEach(function(s){
-    var el=document.createElement("div");
-    el.className="special"+(s.holiday?" holiday":"");
-    if(!s.holiday && s.color) el.style.background=s.color;
-    el.innerHTML='<span class="tag">'+esc(s.tag)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.body)+'</p>';
-    sg.appendChild(el);
-  });
+  var SPEC_GRADS=["linear-gradient(135deg,#7DD8C3,#3E9E8A)","linear-gradient(135deg,#A11833,#6E0F22)","linear-gradient(135deg,#8FC7F2,#4A6FA5)","linear-gradient(135deg,#F2568C,#D33B72)"];
+  function buildSpecials(){
+    sg.innerHTML="";
+    SPECIALS.forEach(function(s,i){
+      var el=document.createElement("div");
+      el.className="special"+(s.holiday?" holiday":"");
+      if(!s.holiday) el.style.background=s.color||SPEC_GRADS[i%SPEC_GRADS.length];
+      el.innerHTML='<span class="tag">'+esc(s.tag)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.body)+'</p>';
+      sg.appendChild(el);
+    });
+    var bn=null;
+    for(var j=0;j<SPECIALS.length;j++){ if(SPECIALS[j].banner){ bn=SPECIALS[j]; break; } }
+    var bar=$("saleBar");
+    if(bn){ bar.innerHTML='<b>'+esc(bn.title)+'</b> · '+esc(bn.body); bar.hidden=false; }
+    else { bar.hidden=true; }
+  }
+  buildSpecials();
 
   // render gallery
   var galGrid=$("galGrid");
@@ -826,8 +840,36 @@
       .catch(function(){ /* keep built-in flavors */ });
   }
 
+  // ---- Live specials & sale banner from her Google Sheet (falls back to built-in) ----
+  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1eTZV-dsbzf2wSOMODwIv8dBd4QjpGLU5zfinRhfjuDM/gviz/tq?tqx=out:csv";
+  function applySpecialsSheet(rows){
+    if(rows.length<2) return;
+    var head=rows[0].map(function(h){return h.trim().toLowerCase();});
+    var hi=head.indexOf("headline"), di=head.indexOf("details"), tgi=head.indexOf("tag"), bi=-1;
+    head.forEach(function(h,idx){ if(h.indexOf("banner")>=0){bi=idx;} });
+    if(hi<0) return;
+    var list=[];
+    for(var r=1;r<rows.length;r++){
+      var title=(rows[r][hi]||"").trim(); if(!title) continue;
+      var body=(di>=0?(rows[r][di]||""):"").trim();
+      var tag=((tgi>=0?(rows[r][tgi]||""):"").trim())||"Special";
+      var bv=(bi>=0?(rows[r][bi]||""):"").trim().toLowerCase();
+      var banner=(bv=="yes"||bv=="y"||bv=="true"||bv=="1"||bv=="x");
+      var holiday=/holiday|order ahead/i.test(tag);
+      list.push({tag:tag,title:title,body:body,banner:banner,holiday:holiday});
+    }
+    if(!list.length) return;
+    SPECIALS=list; buildSpecials();
+  }
+  function fetchSpecials(){
+    if(!window.fetch) return;
+    fetch(SPECIALS_CSV,{cache:"no-store"}).then(function(res){ return res.ok?res.text():Promise.reject(); })
+      .then(function(t){ applySpecialsSheet(parseCSV(t)); })
+      .catch(function(){ /* keep built-in specials */ });
+  }
+
   render();
-  setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchFlavors();
+  setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchFlavors(); fetchSpecials();
 })();
 </script>
 </body>
