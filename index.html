@@ -560,7 +560,9 @@
 
   // render shop
   var grid = $("shopGrid");
-  MENU.forEach(function(m){
+  function buildShop(){
+   grid.innerHTML="";
+   MENU.forEach(function(m){
     var el = document.createElement("div"); el.className="item";
     var flavHtml = "";
     if(m.flavor && m.maxFlavors>1){
@@ -584,7 +586,9 @@
       '<div class="priced"><span class="price">'+fmt(m.price)+'</span><span class="unit">'+esc(m.unit)+'</span></div>'+
       '<button class="add" data-id="'+m.id+'">Add to order</button></div>';
     grid.appendChild(el);
-  });
+   });
+  }
+  buildShop();
   grid.addEventListener("click",function(e){
     var chip=e.target.closest(".fchip");
     if(chip){ toggleChip(chip); return; }
@@ -615,13 +619,16 @@
   }
 
   // render flavor chips
-  var cc=$("classicChips");
-  CLASSIC.forEach(function(f){ cc.innerHTML += '<span class="chip"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+'</span>'; });
-  var pc=$("premiumChips");
-  PREMIUM.forEach(function(f){
-    var on=PREMIUM_THIS_WEEK.indexOf(f)>=0;
-    pc.innerHTML += '<span class="chip '+(on?'on':'off')+'">'+esc(f)+(on?' ✓':'')+'</span>';
-  });
+  var cc=$("classicChips"), pc=$("premiumChips");
+  function buildFlavorChips(){
+    cc.innerHTML=""; pc.innerHTML="";
+    CLASSIC.forEach(function(f){ cc.innerHTML += '<span class="chip"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+'</span>'; });
+    PREMIUM.forEach(function(f){
+      var on=PREMIUM_THIS_WEEK.indexOf(f)>=0;
+      pc.innerHTML += '<span class="chip '+(on?'on':'off')+'">'+esc(f)+(on?' ✓':'')+'</span>';
+    });
+  }
+  buildFlavorChips();
 
   // render specials
   var sg=$("specGrid");
@@ -782,8 +789,45 @@
     var d=new Date(); d.setDate(d.getDate()+14); el.min=d.toISOString().slice(0,10);
   }
 
+  // ---- Live flavors from her Google Sheet (falls back to the built-in list) ----
+  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1h-Hm7pDZ16rWipNyOlD2-1iBp_mmNGA11ZVBLTYOrGs/gviz/tq?tqx=out:csv";
+  function parseCSV(text){
+    var rows=[],row=[],cell="",q=false,i,c;
+    for(i=0;i<text.length;i++){ c=text[i];
+      if(q){ if(c=='"'&&text[i+1]=='"'){cell+='"';i++;} else if(c=='"'){q=false;} else {cell+=c;} }
+      else { if(c=='"'){q=true;} else if(c==','){row.push(cell);cell="";} else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n'){i++;} row.push(cell);cell=""; if(row.some(function(v){return v.trim()!=="";})){rows.push(row);} row=[]; } else {cell+=c;} }
+    }
+    row.push(cell); if(row.some(function(v){return v.trim()!=="";})){rows.push(row);}
+    return rows;
+  }
+  function applyFlavorSheet(rows){
+    if(rows.length<2) return;
+    var head=rows[0].map(function(h){return h.trim().toLowerCase();});
+    var fi=head.indexOf("flavor"), ti=head.indexOf("type"), ai=-1;
+    head.forEach(function(h,idx){ if(h.indexOf("available")>=0){ai=idx;} });
+    if(fi<0) return; // not our sheet / bad response -> keep fallback
+    var classic=[],premium=[],week=[];
+    for(var r=1;r<rows.length;r++){
+      var name=(rows[r][fi]||"").trim(); if(!name) continue;
+      var type=(ti>=0?(rows[r][ti]||""):"").trim().toLowerCase();
+      var av=(ai>=0?(rows[r][ai]||"yes"):"yes").trim().toLowerCase();
+      var isOn=(av=="yes"||av=="y"||av=="true"||av=="1"||av=="x"||av=="✓");
+      if(type.indexOf("premium")>=0){ premium.push(name); if(isOn){week.push(name);} }
+      else { classic.push(name); }
+    }
+    if(!classic.length && !premium.length) return;
+    CLASSIC=classic; PREMIUM=premium; PREMIUM_THIS_WEEK=week;
+    buildShop(); buildFlavorChips();
+  }
+  function fetchFlavors(){
+    if(!window.fetch) return;
+    fetch(FLAVORS_CSV,{cache:"no-store"}).then(function(res){ return res.ok?res.text():Promise.reject(); })
+      .then(function(t){ applyFlavorSheet(parseCSV(t)); })
+      .catch(function(){ /* keep built-in flavors */ });
+  }
+
   render();
-  setupReveal(); setupSprinkles(); setupNav(); setupFormMin();
+  setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchFlavors();
 })();
 </script>
 </body>
