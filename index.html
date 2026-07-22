@@ -804,7 +804,7 @@
   }
 
   // ---- Live flavors from her Google Sheet (falls back to the built-in list) ----
-  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1h-Hm7pDZ16rWipNyOlD2-1iBp_mmNGA11ZVBLTYOrGs/gviz/tq?tqx=out:csv";
+  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1_dxLCowxeugURZzgxb_eoDyrEPU6OnWYyJZjCDOx1dk/gviz/tq?tqx=out:csv&sheet=Flavors";
   function parseCSV(text){
     var rows=[],row=[],cell="",q=false,i,c;
     for(i=0;i<text.length;i++){ c=text[i];
@@ -841,7 +841,7 @@
   }
 
   // ---- Live specials & sale banner from her Google Sheet (falls back to built-in) ----
-  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1eTZV-dsbzf2wSOMODwIv8dBd4QjpGLU5zfinRhfjuDM/gviz/tq?tqx=out:csv";
+  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1_dxLCowxeugURZzgxb_eoDyrEPU6OnWYyJZjCDOx1dk/gviz/tq?tqx=out:csv&sheet=Specials";
   function applySpecialsSheet(rows){
     if(rows.length<2) return;
     var head=rows[0].map(function(h){return h.trim().toLowerCase();});
