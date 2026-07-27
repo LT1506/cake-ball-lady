@@ -391,7 +391,7 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Custom orders</h2>
-      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes (2- or 4-packs) are ordered here too.</p>
+      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes and cakesicles are ordered here too.</p>
     </div>
     <div class="custom-card">
       <div class="custom-facts">
@@ -399,6 +399,7 @@
         <span class="cf">2 colors included</span>
         <span class="cf">2 flavors per dozen</span>
         <span class="cf">Custom gift boxes</span>
+        <span class="cf">Cakesicles</span>
         <span class="cf">2 weeks notice</span>
       </div>
       <form id="customForm">
@@ -526,12 +527,12 @@
 
   // ---------- Shop items ----------
   var MENU = [
-    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C"},
-    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F"},
-    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72"},
-    {id:"pops",   name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3"},
-    {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666"},
-    {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2"}
+    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C", img:"photos/pas4.webp"},
+    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F", img:"photos/Pas2.webp"},
+    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72", img:"photos/pas3.webp"},
+    {id:"pops",   name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3", img:"photos/cpop6.webp"},
+    {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666", img:"photos/Bri1.webp"},
+    {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2", img:"photos/FirstComm2.webp"}
   ];
 
   // ---------- Specials (sample; she updates) ----------
@@ -606,7 +607,7 @@
     {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
     {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A Small box (1 dozen) can mix up to 4 flavors; Medium and Large boxes up to 6; custom dozens are 2 flavors each."},
     {q:"When and where is pickup?", a:"Pickups are Wednesdays, Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. Ordering for each day closes 2 days before at 5pm (so Wednesday pickups close Monday at 5pm, Thursday closes Tuesday, and so on). You can request another day or location, which may incur a small extra fee."},
-    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
+    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Cakesicles are available as a custom order too. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
     {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
   ];
 
@@ -636,7 +637,9 @@
       flavHtml = '<select class="flavsel" aria-label="Flavor for '+esc(m.name)+'">'+opts+'</select>';
     }
     el.innerHTML =
-      '<div class="pic" style="background:linear-gradient(135deg,'+m.color+','+shade(m.color)+')"><span style="text-shadow:0 2px 6px rgba(0,0,0,.2)">'+esc(m.name)+'</span></div>'+
+      (m.img
+        ? '<div class="pic" style="background-image:url(\''+m.img+'\');background-size:cover;background-position:center"></div>'
+        : '<div class="pic" style="background:linear-gradient(135deg,'+m.color+','+shade(m.color)+')"><span style="text-shadow:0 2px 6px rgba(0,0,0,.2)">'+esc(m.name)+'</span></div>')+
       '<div class="body"><h3>'+esc(m.name)+'</h3><p>'+esc(m.desc)+'</p>'+flavHtml+
       '<div class="priced"><span class="price">'+fmt(m.price)+'</span><span class="unit">'+esc(m.unit)+'</span></div>'+
       '<button class="add" data-id="'+m.id+'">Add to order</button></div>';
