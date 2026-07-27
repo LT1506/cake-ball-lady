@@ -913,7 +913,7 @@
   }
 
   // ---- Live flavors from her Google Sheet (falls back to the built-in list) ----
-  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1_dxLCowxeugURZzgxb_eoDyrEPU6OnWYyJZjCDOx1dk/gviz/tq?tqx=out:csv&sheet=Flavors";
+  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Flavors";
   function parseCSV(text){
     var rows=[],row=[],cell="",q=false,i,c;
     for(i=0;i<text.length;i++){ c=text[i];
@@ -950,7 +950,7 @@
   }
 
   // ---- Live specials & sale banner from her Google Sheet (falls back to built-in) ----
-  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1_dxLCowxeugURZzgxb_eoDyrEPU6OnWYyJZjCDOx1dk/gviz/tq?tqx=out:csv&sheet=Specials";
+  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Specials";
   function applySpecialsSheet(rows){
     if(rows.length<2) return;
     var head=rows[0].map(function(h){return h.trim().toLowerCase();});
@@ -978,7 +978,7 @@
   }
 
   // ---- Live gallery photos from her Google Sheet "Gallery" tab (falls back to sample tiles) ----
-  var GALLERY_CSV="https://docs.google.com/spreadsheets/d/1_dxLCowxeugURZzgxb_eoDyrEPU6OnWYyJZjCDOx1dk/gviz/tq?tqx=out:csv&sheet=Gallery";
+  var GALLERY_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Gallery";
   function extractDriveId(s){
     s=(s||"").trim(); if(!s) return "";
     var m=s.match(/\/d\/([-\w]{20,})/) || s.match(/[?&]id=([-\w]{20,})/);
