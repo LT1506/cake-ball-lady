@@ -145,6 +145,10 @@
   .gtile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(74,44,42,.5));}
   .gtile .cb{position:absolute;border-radius:50%;box-shadow:inset -6px -6px 0 rgba(0,0,0,.12);}
   .gtile.ghidden{display:none;}
+  .gal-tabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:22px;}
+  .gal-tab{background:#fff;border:2px solid #F5D9E1;border-radius:999px;padding:8px 15px;font-family:'Nunito';font-weight:800;font-size:.83rem;color:var(--cocoa);cursor:pointer;transition:background .12s,border-color .12s;}
+  .gal-tab:hover{border-color:var(--pink);}
+  .gal-tab.active{background:var(--pink);border-color:var(--pink);color:#fff;}
   .gal-more{display:none;margin:22px auto 0;background:#fff;color:var(--pink-deep);border:2px solid var(--pink);border-radius:999px;padding:11px 26px;font-family:'Baloo 2';font-weight:800;font-size:1rem;cursor:pointer;}
   .gal-more:hover{background:var(--blush);}
   .gal-note{text-align:center;margin-top:16px;color:var(--cocoa-soft);font-weight:600;font-size:.9rem;}
@@ -381,6 +385,7 @@
       <h2>Custom order inspiration</h2>
       <p>A few of our favorite custom bakes. Yours can match any theme, color, or occasion.</p>
     </div>
+    <div class="gal-tabs" id="galTabs"></div>
     <div class="gal-grid" id="galGrid"></div>
     <button class="gal-more" id="galMore" type="button"></button>
     <p class="gal-note">A few recent orders — weddings, communions, birthdays, sports, baby showers and more. Add more anytime from your photos.</p>
@@ -712,11 +717,37 @@
   var galGrid=$("galGrid");
   var galNote=document.querySelector("#gallery .gal-note");
   var DOT_POS=[[8,10,44],[52,6,34],[14,54,38],[58,50,40],[34,30,30]];
-  var GAL_LIMIT=12;
+  var GAL_LIMIT=12, activeCat="All";
+  var CAT_ORDER=["Bridal","Communion","Birthday","Baby Shower","Sports","Signature","Cake Pops","Cakesicles","More"];
+  function catOf(img){
+    var f=(img||"").split("/").pop().toLowerCase();
+    if(f.indexOf("firstcomm")===0) return "Communion";
+    if(f.indexOf("bir")===0)   return "Birthday";
+    if(f.indexOf("spbal")===0)  return "Sports";
+    if(f.indexOf("bb")===0)    return "Baby Shower";
+    if(f.indexOf("bri")===0)   return "Bridal";
+    if(f.indexOf("pas")===0 || f.indexOf("sig")===0) return "Signature";
+    if(f.indexOf("cpop")===0)  return "Cake Pops";
+    if(f.indexOf("sicles")===0) return "Cakesicles";
+    return "More";
+  }
+  function buildGalTabs(){
+    var tabs=$("galTabs"); tabs.innerHTML="";
+    var counts={}; GALLERY.forEach(function(g){ var c=catOf(g.img); counts[c]=(counts[c]||0)+1; });
+    var cats=["All"].concat(CAT_ORDER.filter(function(c){ return counts[c]; }));
+    cats.forEach(function(c){
+      var b=document.createElement("button"); b.type="button";
+      b.className="gal-tab"+(c===activeCat?" active":""); b.setAttribute("data-cat",c);
+      b.textContent = c==="All" ? ("All ("+GALLERY.length+")") : (c+" ("+counts[c]+")");
+      tabs.appendChild(b);
+    });
+  }
   function buildGallery(){
     galGrid.innerHTML="";
-    GALLERY.forEach(function(g,idx){
-      var t=document.createElement("div"); t.className="gtile"+(idx>=GAL_LIMIT?" ghidden":"");
+    var items = activeCat==="All" ? GALLERY : GALLERY.filter(function(g){ return catOf(g.img)===activeCat; });
+    var limited = (activeCat==="All");
+    items.forEach(function(g,idx){
+      var t=document.createElement("div"); t.className="gtile"+(limited && idx>=GAL_LIMIT?" ghidden":"");
       if(g.img){
         t.style.backgroundImage="url('"+g.img+"')"; t.style.backgroundSize="cover"; t.style.backgroundPosition="center";
         t.innerHTML=(g.cap?'<span class="cap">'+esc(g.cap)+'</span>':'');
@@ -729,10 +760,15 @@
       galGrid.appendChild(t);
     });
     var more=$("galMore");
-    if(GALLERY.length>GAL_LIMIT){ more.textContent="Show all "+GALLERY.length+" photos"; more.style.display="block"; }
+    if(limited && items.length>GAL_LIMIT){ more.textContent="Show all "+items.length+" photos"; more.style.display="block"; }
     else { more.style.display="none"; }
   }
-  buildGallery();
+  function renderGallery(){ buildGalTabs(); buildGallery(); }
+  renderGallery();
+  $("galTabs").addEventListener("click",function(e){
+    var b=e.target.closest(".gal-tab"); if(!b) return;
+    activeCat=b.getAttribute("data-cat"); renderGallery();
+  });
   $("galMore").addEventListener("click",function(){
     [].forEach.call(galGrid.querySelectorAll(".ghidden"),function(el){ el.classList.remove("ghidden"); });
     this.style.display="none";
@@ -968,7 +1004,7 @@
     if(!list.length) return;
     var seen={}; GALLERY.forEach(function(g){ if(g.img) seen[g.img]=1; });
     list.forEach(function(g){ if(!seen[g.img]){ GALLERY.push(g); seen[g.img]=1; } });
-    buildGallery();
+    renderGallery();
   }
   function fetchGallery(){
     if(!window.fetch) return;
