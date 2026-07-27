@@ -912,111 +912,39 @@
     var d=new Date(); d.setDate(d.getDate()+14); el.min=d.toISOString().slice(0,10);
   }
 
-  // ---- Live flavors from her Google Sheet (falls back to the built-in list) ----
-  var FLAVORS_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Flavors";
-  function parseCSV(text){
-    var rows=[],row=[],cell="",q=false,i,c;
-    for(i=0;i<text.length;i++){ c=text[i];
-      if(q){ if(c=='"'&&text[i+1]=='"'){cell+='"';i++;} else if(c=='"'){q=false;} else {cell+=c;} }
-      else { if(c=='"'){q=true;} else if(c==','){row.push(cell);cell="";} else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n'){i++;} row.push(cell);cell=""; if(row.some(function(v){return v.trim()!=="";})){rows.push(row);} row=[]; } else {cell+=c;} }
+  // ---- Live content from the admin backend (falls back to the built-in data) ----
+  var CONTENT_API="https://cake-ball-admin-production.up.railway.app/api/content";
+  function applyContent(d){
+    if(d.flavors && d.flavors.length){
+      var classic=[],premium=[],week=[];
+      d.flavors.forEach(function(f){
+        var name=(f.name||"").trim(); if(!name) return;
+        if((f.type||"").toLowerCase().indexOf("premium")>=0){ premium.push(name); if(f.available){ week.push(name); } }
+        else { classic.push(name); }
+      });
+      if(classic.length||premium.length){ CLASSIC=classic; PREMIUM=premium; PREMIUM_THIS_WEEK=week; buildShop(); buildFlavorChips(); }
     }
-    row.push(cell); if(row.some(function(v){return v.trim()!=="";})){rows.push(row);}
-    return rows;
-  }
-  function applyFlavorSheet(rows){
-    if(rows.length<2) return;
-    var head=rows[0].map(function(h){return h.trim().toLowerCase();});
-    var fi=head.indexOf("flavor"), ti=head.indexOf("type"), ai=-1;
-    head.forEach(function(h,idx){ if(h.indexOf("available")>=0){ai=idx;} });
-    if(fi<0) return; // not our sheet / bad response -> keep fallback
-    var classic=[],premium=[],week=[];
-    for(var r=1;r<rows.length;r++){
-      var name=(rows[r][fi]||"").trim(); if(!name) continue;
-      var type=(ti>=0?(rows[r][ti]||""):"").trim().toLowerCase();
-      var av=(ai>=0?(rows[r][ai]||"yes"):"yes").trim().toLowerCase();
-      var isOn=(av=="yes"||av=="y"||av=="true"||av=="1"||av=="x"||av=="✓");
-      if(type.indexOf("premium")>=0){ premium.push(name); if(isOn){week.push(name);} }
-      else { classic.push(name); }
+    if(d.specials && d.specials.length){
+      SPECIALS=d.specials.map(function(s){
+        var tag=(s.tag||"Special").trim()||"Special";
+        return {tag:tag, title:(s.headline||"").trim(), body:(s.details||"").trim(), banner:!!s.banner, holiday:/holiday|order ahead/i.test(tag)};
+      });
+      buildSpecials();
     }
-    if(!classic.length && !premium.length) return;
-    CLASSIC=classic; PREMIUM=premium; PREMIUM_THIS_WEEK=week;
-    buildShop(); buildFlavorChips();
+    if(d.gallery && d.gallery.length){
+      GALLERY=d.gallery.map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
+      renderGallery();
+    }
   }
-  function fetchFlavors(){
+  function fetchContent(){
     if(!window.fetch) return;
-    fetch(FLAVORS_CSV,{cache:"no-store"}).then(function(res){ return res.ok?res.text():Promise.reject(); })
-      .then(function(t){ applyFlavorSheet(parseCSV(t)); })
-      .catch(function(){ /* keep built-in flavors */ });
-  }
-
-  // ---- Live specials & sale banner from her Google Sheet (falls back to built-in) ----
-  var SPECIALS_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Specials";
-  function applySpecialsSheet(rows){
-    if(rows.length<2) return;
-    var head=rows[0].map(function(h){return h.trim().toLowerCase();});
-    var hi=head.indexOf("headline"), di=head.indexOf("details"), tgi=head.indexOf("tag"), bi=-1;
-    head.forEach(function(h,idx){ if(h.indexOf("banner")>=0){bi=idx;} });
-    if(hi<0) return;
-    var list=[];
-    for(var r=1;r<rows.length;r++){
-      var title=(rows[r][hi]||"").trim(); if(!title) continue;
-      var body=(di>=0?(rows[r][di]||""):"").trim();
-      var tag=((tgi>=0?(rows[r][tgi]||""):"").trim())||"Special";
-      var bv=(bi>=0?(rows[r][bi]||""):"").trim().toLowerCase();
-      var banner=(bv=="yes"||bv=="y"||bv=="true"||bv=="1"||bv=="x");
-      var holiday=/holiday|order ahead/i.test(tag);
-      list.push({tag:tag,title:title,body:body,banner:banner,holiday:holiday});
-    }
-    if(!list.length) return;
-    SPECIALS=list; buildSpecials();
-  }
-  function fetchSpecials(){
-    if(!window.fetch) return;
-    fetch(SPECIALS_CSV,{cache:"no-store"}).then(function(res){ return res.ok?res.text():Promise.reject(); })
-      .then(function(t){ applySpecialsSheet(parseCSV(t)); })
-      .catch(function(){ /* keep built-in specials */ });
-  }
-
-  // ---- Live gallery photos from her Google Sheet "Gallery" tab (falls back to sample tiles) ----
-  var GALLERY_CSV="https://docs.google.com/spreadsheets/d/1n1WbRhQuGzxcGmT-h4A4X-vf3IJ0pQtHy2rQ1Ksggtk/gviz/tq?tqx=out:csv&sheet=Gallery";
-  function extractDriveId(s){
-    s=(s||"").trim(); if(!s) return "";
-    var m=s.match(/\/d\/([-\w]{20,})/) || s.match(/[?&]id=([-\w]{20,})/);
-    if(m) return m[1];
-    if(/^[-\w]{20,}$/.test(s)) return s;
-    return "";
-  }
-  function applyGallerySheet(rows){
-    if(rows.length<2) return;
-    var head=rows[0].map(function(h){return h.trim().toLowerCase();});
-    var pi=-1, ci=-1, cati=-1;
-    head.forEach(function(h,idx){
-      if(pi<0 && (h.indexOf("photo")>=0||h.indexOf("link")>=0||h.indexOf("url")>=0||h.indexOf("image")>=0)) pi=idx;
-      if(ci<0 && (h.indexOf("caption")>=0||h.indexOf("title")>=0||h.indexOf("label")>=0)) ci=idx;
-      if(cati<0 && (h.indexOf("category")>=0||h.indexOf("group")>=0)) cati=idx;
-    });
-    if(pi<0) return;
-    var list=[];
-    for(var r=1;r<rows.length;r++){
-      var raw=(rows[r][pi]||"").trim(); var id=extractDriveId(raw);
-      var src = id ? ("https://drive.google.com/thumbnail?id="+id+"&sz=w1200") : (/^https?:\/\//i.test(raw)?raw:"");
-      if(!src) continue;
-      list.push({img:src, cap:(ci>=0?(rows[r][ci]||""):"").trim(), cat:(cati>=0?(rows[r][cati]||""):"").trim()});
-    }
-    if(!list.length) return;
-    var seen={}; GALLERY.forEach(function(g){ if(g.img) seen[g.img]=1; });
-    list.forEach(function(g){ if(!seen[g.img]){ GALLERY.push(g); seen[g.img]=1; } });
-    renderGallery();
-  }
-  function fetchGallery(){
-    if(!window.fetch) return;
-    fetch(GALLERY_CSV,{cache:"no-store"}).then(function(res){ return res.ok?res.text():Promise.reject(); })
-      .then(function(t){ applyGallerySheet(parseCSV(t)); })
-      .catch(function(){ /* keep sample tiles */ });
+    fetch(CONTENT_API,{cache:"no-store"}).then(function(res){ return res.ok?res.json():Promise.reject(); })
+      .then(function(d){ applyContent(d); })
+      .catch(function(){ /* keep built-in content */ });
   }
 
   render();
-  setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchFlavors(); fetchSpecials(); fetchGallery();
+  setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchContent();
 })();
 </script>
 </body>
