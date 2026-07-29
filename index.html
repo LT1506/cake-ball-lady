@@ -870,9 +870,22 @@
   // checkout (preview)
   $("checkoutBtn").addEventListener("click",function(){
     var date=$("pickupDate").value, loc=$("pickupLoc").value;
-    var locNote=LOC_NOTES[loc]?(" ("+LOC_NOTES[loc].replace(/\.$/,"")+")"):"";
-    closeCart();
-    showModal("&#128179;","Card checkout goes here","In the finished site this is a secure Stripe card payment for "+$("cartTotal").textContent+", picking up "+date+" at "+loc+locNote+". The money goes to The Cake Ball Lady, and the order (flavors, pickup day & location) arrives by email automatically.");
+    if(!CHECKOUT_LIVE){
+      var locNote=LOC_NOTES[loc]?(" ("+LOC_NOTES[loc].replace(/\.$/,"")+")"):"";
+      closeCart();
+      showModal("&#128179;","Card checkout goes here","In the finished site this is a secure Stripe card payment for "+$("cartTotal").textContent+", picking up "+date+" at "+loc+locNote+". The money goes to The Cake Ball Lady.");
+      return;
+    }
+    var items=Object.keys(cart).map(function(k){ return {id:cart[k].id, qty:cart[k].qty, flavors:cart[k].flavors||[]}; });
+    var btn=$("checkoutBtn"); btn.disabled=true; btn.textContent="Taking you to checkout…";
+    fetch(CHECKOUT_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc})})
+      .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
+      .then(function(r){
+        if(r.ok && r.j && r.j.url){ window.location.href=r.j.url; }
+        else { render(); showModal("&#9888;&#65039;","One moment","We couldn't start checkout"+((r.j&&r.j.detail)?": "+r.j.detail:"")+". Please try again."); }
+      })
+      .catch(function(){ render(); showModal("&#9888;&#65039;","One moment","We couldn't reach checkout right now. Please try again in a bit."); });
   });
 
   // custom form (preview)
@@ -913,8 +926,10 @@
   }
 
   // ---- Live content from the admin backend (falls back to the built-in data) ----
-  var CONTENT_API="https://cake-ball-admin-production.up.railway.app/api/content";
+  var API_BASE="https://cake-ball-admin-production.up.railway.app";
+  var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout", CHECKOUT_LIVE=false;
   function applyContent(d){
+    CHECKOUT_LIVE = !!d.checkout_live;
     if(d.flavors && d.flavors.length){
       var classic=[],premium=[],week=[];
       d.flavors.forEach(function(f){
@@ -945,6 +960,12 @@
 
   render();
   setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchContent();
+
+  // thank-you after returning from Stripe checkout
+  if(/[?&]order=success/.test(location.search)){
+    showModal("&#127874;","Thank you!","Your order is placed and paid — you'll get a receipt from Stripe. Your cake balls will be ready for your pickup day. See you soon!");
+    if(history.replaceState){ history.replaceState(null,"",location.pathname); }
+  }
 })();
 </script>
 </body>
