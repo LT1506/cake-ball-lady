@@ -102,6 +102,7 @@
   @keyframes nudge{25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
   .item .priced{display:flex;align-items:baseline;gap:5px;margin-bottom:12px;}
   .item .price{font-family:'Baloo 2';font-weight:800;font-size:1.45rem;color:var(--pink-deep);}
+  .item .fnote{font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin:8px 0 0;}
   .item .unit{font-size:.85rem;color:var(--cocoa-soft);font-weight:700;}
   .item .add{background:var(--pink);color:#fff;border:none;border-radius:999px;padding:11px;font-family:'Nunito';font-weight:800;font-size:.92rem;cursor:pointer;}
   .item .add:hover{background:var(--pink-deep);}
@@ -395,7 +396,7 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Custom orders</h2>
-      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes and cakesicles are ordered here too.</p>
+      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes are ordered here too.</p>
     </div>
     <div class="custom-card">
       <div class="custom-facts">
@@ -403,7 +404,6 @@
         <span class="cf">2 colors included</span>
         <span class="cf">2 flavors per dozen</span>
         <span class="cf">Custom gift boxes</span>
-        <span class="cf">Cakesicles</span>
         <span class="cf">2 weeks notice</span>
       </div>
       <form id="customForm">
@@ -529,13 +529,27 @@
   };
   function fColor(f){return FLAVOR_COLOR[f]||"#F2568C";}
   function orderFlavors(){ return CLASSIC.concat(PREMIUM_THIS_WEEK); }
+  function flavorsFor(m){ return m.classicOnly ? CLASSIC.slice() : orderFlavors(); }
+  function isPremium(f){ return PREMIUM.indexOf(f) >= 0; }
+  // Mirror of the server's pricing (app/catalog.py unit_price): premium flavors
+  // add $0.50 per premium ball in a box, or $0.50 on a single pop/cakesicle.
+  function unitPrice(m, flavors){
+    var base=m.price;
+    if(!m.flavor || !flavors || !flavors.length) return base;
+    if(m.balls){
+      var prem=0; for(var i=0;i<flavors.length;i++){ if(isPremium(flavors[i])) prem++; }
+      return base + Math.round(m.balls*prem/flavors.length)*0.5;
+    }
+    return base + (isPremium(flavors[0])?0.5:0);
+  }
 
   // ---------- Shop items ----------
   var MENU = [
-    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C", img:"photos/small-box.jpg"},
-    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F", img:"photos/medium-box.jpg"},
-    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72", img:"photos/large-box.jpg"},
+    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, balls:12, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C", img:"photos/small-box.jpg"},
+    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, balls:24, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F", img:"photos/medium-box.jpg"},
+    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, balls:36, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72", img:"photos/large-box.jpg"},
     {id:"pops",   name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3", img:"photos/cpop6.webp"},
+    {id:"sicle",  name:"Cakesicle",            desc:"A popsicle-shaped cake pop on a stick, dipped and decorated. One flavor each.", price:4, unit:"each", flavor:true, maxFlavors:1, classicOnly:true, color:"#8FC7F2", img:"photos/cakesicle.jpg"},
     {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666", img:"photos/gift-2pack.jpg"},
     {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2", img:"photos/gift-4pack.jpg"}
   ];
@@ -612,7 +626,7 @@
     {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
     {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A Small box (1 dozen) can mix up to 4 flavors; Medium and Large boxes up to 6; custom dozens are 2 flavors each."},
     {q:"When and where is pickup?", a:"Pickups are Wednesdays, Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. Ordering for each day closes 2 days before at 5pm (so Wednesday pickups close Monday at 5pm, Thursday closes Tuesday, and so on). You can request another day or location, which may incur a small extra fee."},
-    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Cakesicles are available as a custom order too. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
+    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Cakesicles are $4 each and can be added right here on the site. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
     {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
   ];
 
@@ -627,19 +641,19 @@
     var el = document.createElement("div"); el.className="item";
     var flavHtml = "";
     if(m.flavor && m.maxFlavors>1){
-      var chips = orderFlavors().map(function(f){
-        var prem = PREMIUM_THIS_WEEK.indexOf(f)>=0;
-        return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(prem?' <em>premium</em>':'')+'</button>';
+      var chips = flavorsFor(m).map(function(f){
+        return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(isPremium(f)?' <em>premium</em>':'')+'</button>';
       }).join("");
       flavHtml = '<div class="flavpick" data-max="'+m.maxFlavors+'" role="group" aria-label="Pick up to '+m.maxFlavors+' flavors for '+esc(m.name)+'">'+
         '<div class="fplabel">Pick up to '+m.maxFlavors+' flavors <span class="fcount">0/'+m.maxFlavors+'</span></div>'+
-        '<div class="fchips">'+chips+'</div></div>';
+        '<div class="fchips">'+chips+'</div></div>'+
+        '<div class="fnote">Premium flavors add $0.50 per ball.</div>';
     } else if(m.flavor){
-      var opts = orderFlavors().map(function(f){
-        var prem = PREMIUM_THIS_WEEK.indexOf(f)>=0;
-        return '<option value="'+esc(f)+'">'+esc(f)+(prem?" (premium)":"")+'</option>';
+      var opts = flavorsFor(m).map(function(f){
+        return '<option value="'+esc(f)+'">'+esc(f)+(isPremium(f)?" (premium)":"")+'</option>';
       }).join("");
-      flavHtml = '<select class="flavsel" aria-label="Flavor for '+esc(m.name)+'">'+opts+'</select>';
+      flavHtml = '<select class="flavsel" aria-label="Flavor for '+esc(m.name)+'">'+opts+'</select>'+
+        (m.classicOnly ? '' : '<div class="fnote">Premium flavors add $0.50 each.</div>');
     }
     el.innerHTML =
       (m.img
@@ -671,6 +685,17 @@
     confettiBurst(r.left+r.width/2, r.top+r.height/2);
     openCart();
   });
+  function cardFlavors(itemEl){
+    var pick=itemEl.querySelector(".flavpick");
+    if(pick) return [].slice.call(pick.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");});
+    var sel=itemEl.querySelector(".flavsel"); return sel?[sel.value]:[];
+  }
+  function updateCardPrice(itemEl){
+    if(!itemEl) return;
+    var b=itemEl.querySelector(".add"); if(!b) return;
+    var m=MENU.find(function(x){return x.id===b.dataset.id;}); if(!m) return;
+    var p=itemEl.querySelector(".price"); if(p) p.textContent=fmt(unitPrice(m, cardFlavors(itemEl)));
+  }
   function toggleChip(chip){
     var pick=chip.closest(".flavpick"), max=+pick.getAttribute("data-max");
     var n=pick.querySelectorAll(".fchip.sel").length;
@@ -679,7 +704,9 @@
     pick.classList.remove("overpick");
     if(motionOK() && chip.classList.contains("sel")){ chip.classList.remove("justsel"); void chip.offsetWidth; chip.classList.add("justsel"); }
     pick.querySelector(".fcount").textContent = pick.querySelectorAll(".fchip.sel").length+"/"+max;
+    updateCardPrice(pick.closest(".item"));
   }
+  grid.addEventListener("change",function(e){ if(e.target.classList && e.target.classList.contains("flavsel")) updateCardPrice(e.target.closest(".item")); });
 
   // render flavor chips
   var cc=$("classicChips"), pc=$("premiumChips");
@@ -829,7 +856,7 @@
     if(!keys.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
     keys.forEach(function(k,ix){
       var line=cart[k], m=MENU.find(function(x){return x.id===line.id;});
-      total+=m.price*line.qty; count+=line.qty;
+      var up=unitPrice(m,line.flavors); total+=up*line.qty; count+=line.qty;
       if(m.gift) hasGift=true;
       var flavs=line.flavors||[];
       var dotColor=flavs.length?fColor(flavs[0]):m.color;
@@ -839,7 +866,7 @@
       row.innerHTML='<span class="cidot" style="background:'+dotColor+'"></span>'+
         '<div style="flex:1"><div class="ciname">'+esc(m.name)+sub+'</div>'+
         '<div class="qty"><button data-k="'+k+'" data-d="-1">&minus;</button><span>'+line.qty+'</span><button data-k="'+k+'" data-d="1">+</button></div></div>'+
-        '<span class="ciprice">'+fmt(m.price*line.qty)+'</span>';
+        '<span class="ciprice">'+fmt(up*line.qty)+'</span>';
       items.appendChild(row);
     });
     $("cartTotal").textContent=fmt(total);
