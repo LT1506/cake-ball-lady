@@ -886,16 +886,21 @@
       .catch(function(){ render(); showModal("&#9888;&#65039;","One moment","We couldn't reach checkout right now. Please try again in a bit."); });
   });
 
-  // custom form -> opens a pre-filled email to her (customer supplies their own contact)
+  // custom form -> logs to her Orders board; falls back to email if it can't be sent
   $("customForm").addEventListener("submit",function(e){
     e.preventDefault();
-    var name=$("cf-name").value.trim(), contact=$("cf-contact").value.trim(),
-        occ=$("cf-occasion").value.trim(), date=$("cf-date").value.trim(), det=$("cf-details").value.trim();
-    var subject="Custom cake ball request"+(name?(" - "+name):"");
-    var body="Name: "+name+"\nPhone or email: "+contact+"\nOccasion: "+occ+"\nDate needed: "+date+"\n\nDetails:\n"+det+"\n";
-    window.location.href="mailto:cakeballsbyjoni@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
-    showModal("&#128233;","Opening your email…","We put your request into an email to The Cake Ball Lady — just hit send and she'll reply with a quote and a card payment link. If your email app didn't open, send your details to cakeballsbyjoni@gmail.com.");
-    e.target.reset();
+    var form=e.target;
+    var payload={ name:$("cf-name").value.trim(), contact:$("cf-contact").value.trim(),
+      occasion:$("cf-occasion").value.trim(), date:$("cf-date").value.trim(), details:$("cf-details").value.trim() };
+    function fallbackEmail(){
+      var subject="Custom cake ball request"+(payload.name?(" - "+payload.name):"");
+      var body="Name: "+payload.name+"\nPhone or email: "+payload.contact+"\nOccasion: "+payload.occasion+"\nDate needed: "+payload.date+"\n\nDetails:\n"+payload.details+"\n";
+      window.location.href="mailto:cakeballsbyjoni@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+    }
+    fetch(API_BASE+"/api/custom-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
+      .then(function(res){ if(!res.ok) throw new Error("bad"); return res.json(); })
+      .then(function(){ showModal("&#128233;","Request sent!","Thanks! Your custom request went straight to The Cake Ball Lady. She'll reply with a quote and a link to pay by card."); form.reset(); })
+      .catch(function(){ fallbackEmail(); showModal("&#128233;","Opening your email…","We couldn't send it automatically, so we put your request into an email to The Cake Ball Lady — just hit send. If your email app didn't open, send your details to cakeballsbyjoni@gmail.com."); form.reset(); });
   });
 
   // modal
