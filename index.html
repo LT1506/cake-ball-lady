@@ -35,8 +35,6 @@
   .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
   :focus-visible{outline:3px solid var(--pink);outline-offset:3px;border-radius:6px;}
 
-  .preview-strip{background:var(--cocoa);color:#FFE9EF;text-align:center;font-size:.86rem;font-weight:600;padding:8px 16px;}
-  .preview-strip b{color:var(--butter);}
   .sale-bar{background:linear-gradient(90deg,var(--pink),var(--pink-deep));color:#fff;text-align:center;font-weight:800;font-size:.95rem;padding:11px 18px;}
   .sale-bar b{color:var(--butter);}
 
@@ -132,6 +130,8 @@
   .special h3{color:#fff;font-size:1.4rem;margin-bottom:6px;}
   .special p{font-weight:600;font-size:.95rem;opacity:.95;}
   .special .tag{display:inline-block;background:rgba(255,255,255,.22);border-radius:999px;padding:4px 12px;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+  .special .spec-photos{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .special .spec-photos img{width:66px;height:66px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.55);}
   .holiday{background:linear-gradient(135deg,var(--butter),#F0A93C);color:var(--cocoa);}
   .holiday h3,.holiday .tag{color:var(--cocoa);}
   .holiday .tag{background:rgba(74,44,42,.14);}
@@ -282,8 +282,6 @@
 </style>
 </head>
 <body>
-
-<div class="preview-strip"><b>Preview</b> for The Cake Ball Lady — card checkout goes live once your payment account is connected. Real prices, flavors &amp; photos shown; sample weekly flavors &amp; specials.</div>
 
 <div class="sale-bar" id="saleBar" hidden></div>
 
@@ -473,7 +471,7 @@
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
     <p class="gift-warn" id="giftNote" hidden></p>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
-    <p class="pay-note">Secure card payment. In the live site this is powered by Stripe and goes to The Cake Ball Lady.</p>
+    <p class="pay-note">Secure card payment powered by Stripe. Your payment goes straight to The Cake Ball Lady.</p>
   </div>
 </aside>
 
@@ -702,7 +700,11 @@
       var el=document.createElement("div");
       el.className="special"+(s.holiday?" holiday":"");
       if(!s.holiday) el.style.background=s.color||SPEC_GRADS[i%SPEC_GRADS.length];
-      el.innerHTML='<span class="tag">'+esc(s.tag)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.body)+'</p>';
+      var strip="";
+      if(s.photos && s.photos.length){
+        strip='<div class="spec-photos">'+s.photos.map(function(p){ return '<img src="'+esc(p.img)+'" alt="'+esc(p.cap||s.title)+'" loading="lazy">'; }).join("")+'</div>';
+      }
+      el.innerHTML='<span class="tag">'+esc(s.tag)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc(s.body)+'</p>'+strip;
       sg.appendChild(el);
     });
     var bn=null;
@@ -867,15 +869,9 @@
   $("closeCart").addEventListener("click",closeCart);
   $("overlay").addEventListener("click",closeCart);
 
-  // checkout (preview)
+  // checkout
   $("checkoutBtn").addEventListener("click",function(){
     var date=$("pickupDate").value, loc=$("pickupLoc").value;
-    if(!CHECKOUT_LIVE){
-      var locNote=LOC_NOTES[loc]?(" ("+LOC_NOTES[loc].replace(/\.$/,"")+")"):"";
-      closeCart();
-      showModal("&#128179;","Card checkout goes here","In the finished site this is a secure Stripe card payment for "+$("cartTotal").textContent+", picking up "+date+" at "+loc+locNote+". The money goes to The Cake Ball Lady.");
-      return;
-    }
     var items=Object.keys(cart).map(function(k){ return {id:cart[k].id, qty:cart[k].qty, flavors:cart[k].flavors||[]}; });
     var btn=$("checkoutBtn"); btn.disabled=true; btn.textContent="Taking you to checkout…";
     fetch(CHECKOUT_URL,{method:"POST",headers:{"Content-Type":"application/json"},
@@ -927,9 +923,8 @@
 
   // ---- Live content from the admin backend (falls back to the built-in data) ----
   var API_BASE="https://cake-ball-admin-production.up.railway.app";
-  var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout", CHECKOUT_LIVE=false;
+  var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout";
   function applyContent(d){
-    CHECKOUT_LIVE = !!d.checkout_live;
     if(d.flavors && d.flavors.length){
       var classic=[],premium=[],week=[];
       d.flavors.forEach(function(f){
@@ -940,14 +935,18 @@
       if(classic.length||premium.length){ CLASSIC=classic; PREMIUM=premium; PREMIUM_THIS_WEEK=week; buildShop(); buildFlavorChips(); }
     }
     if(d.specials && d.specials.length){
+      var specPhotos={};
+      (d.gallery||[]).forEach(function(p){
+        if(p.special_id){ (specPhotos[p.special_id]=specPhotos[p.special_id]||[]).push({img:p.url, cap:(p.caption||"").trim()}); }
+      });
       SPECIALS=d.specials.map(function(s){
         var tag=(s.tag||"Special").trim()||"Special";
-        return {tag:tag, title:(s.headline||"").trim(), body:(s.details||"").trim(), banner:!!s.banner, holiday:/holiday|order ahead/i.test(tag)};
+        return {tag:tag, title:(s.headline||"").trim(), body:(s.details||"").trim(), banner:!!s.banner, holiday:/holiday|order ahead/i.test(tag), photos:specPhotos[s.id]||[]};
       });
       buildSpecials();
     }
     if(d.gallery && d.gallery.length){
-      GALLERY=d.gallery.map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
+      GALLERY=d.gallery.filter(function(p){ return !p.special_id; }).map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
       renderGallery();
     }
   }
