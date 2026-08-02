@@ -216,6 +216,7 @@
   .checkout:hover{background:var(--pink-deep);}
   .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
   .pay-note{text-align:center;font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin-top:9px;}
+  .fee-note{text-align:center;font-size:.8rem;color:var(--cocoa-soft);font-weight:700;margin:-2px 0 12px;}
 
   .modal{position:fixed;inset:0;display:none;place-items:center;z-index:90;padding:20px;}
   .modal.open{display:grid;}
@@ -469,6 +470,7 @@
       <div class="hint" id="locHint"></div>
     </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+    <p class="fee-note">+3% card fee added at checkout</p>
     <p class="gift-warn" id="giftNote" hidden></p>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
     <p class="pay-note">Secure card payment powered by Stripe. Your payment goes straight to The Cake Ball Lady.</p>
