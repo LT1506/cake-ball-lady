@@ -553,6 +553,9 @@
     {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666", img:"photos/gift-2pack.jpg"},
     {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2", img:"photos/gift-4pack.jpg"}
   ];
+  // Buyable specials (from the admin) are appended to the shop at runtime.
+  var BASE_MENU = MENU.slice(), SPECIAL_ITEMS = [];
+  function rebuildMenu(){ MENU = BASE_MENU.concat(SPECIAL_ITEMS); buildShop(); }
 
   // ---------- Specials (sample; she updates) ----------
   var SPECIALS = [
@@ -725,6 +728,7 @@
   var SPEC_GRADS=["linear-gradient(135deg,#7DD8C3,#3E9E8A)","linear-gradient(135deg,#A11833,#6E0F22)","linear-gradient(135deg,#8FC7F2,#4A6FA5)","linear-gradient(135deg,#F2568C,#D33B72)"];
   function buildSpecials(){
     sg.innerHTML="";
+    var sec=document.getElementById("specials"); if(sec) sec.style.display = SPECIALS.length ? "" : "none";
     SPECIALS.forEach(function(s,i){
       var el=document.createElement("div");
       el.className="special"+(s.holiday?" holiday":"");
@@ -824,20 +828,37 @@
   var LOC_NOTES={"Porch Pickup":"Ready by noon that day.","Locally Loved Boutique":"Available during the boutique's store hours.","Request another location (may incur a fee)":"We'll confirm the time and any fee with you."};
   $("pickupLoc").addEventListener("change",function(){ $("locHint").textContent = LOC_NOTES[$("pickupLoc").value]||""; render(); });
 
-  function upcomingPickups(n){
+  function upcomingPickups(n, minLead){
     // Pickup days Wed(3),Thu(4),Fri(5),Sat(6). A date stays available until 5pm
     // two days before it (Mon 5pm closes Wed, Tue 5pm closes Thu, etc.).
+    // minLead: some specials need extra days of notice; a date must be at least
+    // that many days out.
+    minLead=minLead||0;
     var days=[3,4,5,6], out=[], now=new Date();
+    var earliest=new Date(); earliest.setHours(0,0,0,0); earliest.setDate(earliest.getDate()+minLead);
     var d=new Date(); d.setHours(0,0,0,0);
     var guard=0;
-    while(out.length<n && guard<180){
-      if(days.indexOf(d.getDay())>=0){
+    while(out.length<n && guard<400){
+      if(days.indexOf(d.getDay())>=0 && d>=earliest){
         var cutoff=new Date(d); cutoff.setDate(cutoff.getDate()-2); cutoff.setHours(17,0,0,0);
         if(now < cutoff) out.push(new Date(d));
       }
       d.setDate(d.getDate()+1); guard++;
     }
     return out;
+  }
+  var lastLead=0;
+  function cartMaxLead(){ var mx=0; Object.keys(cart).forEach(function(k){ var m=MENU.find(function(x){return x.id===cart[k].id;}); if(m&&m.leadDays&&m.leadDays>mx) mx=m.leadDays; }); return mx; }
+  function syncPickupLead(){
+    var lead=cartMaxLead(); if(lead===lastLead) return; lastLead=lead;
+    var keep=pickupSel.value;
+    pickupSel.innerHTML='<option value="">Choose a pickup day…</option>';
+    var stillThere=false;
+    upcomingPickups(9, lead).forEach(function(d){
+      var label=fmtDate(d), o=document.createElement("option"); o.value=label; o.textContent=label;
+      if(label===keep) stillThere=true; pickupSel.appendChild(o);
+    });
+    pickupSel.value = stillThere ? keep : "";
   }
   function fmtDate(d){
     var wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
@@ -851,6 +872,7 @@
   function chg(k,delta){if(cart[k]){cart[k].qty+=delta; if(cart[k].qty<=0) delete cart[k];} render();}
 
   function render(){
+    syncPickupLead();
     var items=$("cartItems"); items.innerHTML="";
     var total=0,count=0,hasGift=false,keys=Object.keys(cart);
     if(!keys.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
@@ -978,11 +1000,29 @@
       (d.gallery||[]).forEach(function(p){
         if(p.special_id){ (specPhotos[p.special_id]=specPhotos[p.special_id]||[]).push({img:p.url, cap:(p.caption||"").trim()}); }
       });
-      SPECIALS=d.specials.map(function(s){
+      // Non-buyable specials stay as promo cards in the Specials section.
+      SPECIALS=d.specials.filter(function(s){ return !s.buyable; }).map(function(s){
         var tag=(s.tag||"Special").trim()||"Special";
         return {tag:tag, title:(s.headline||"").trim(), body:(s.details||"").trim(), banner:!!s.banner, holiday:/holiday|order ahead/i.test(tag), photos:specPhotos[s.id]||[]};
       });
       buildSpecials();
+      // Buyable specials become shoppable cards (one per size option) in the shop.
+      SPECIAL_ITEMS=[];
+      d.specials.filter(function(s){ return s.buyable && s.options && s.options.length; }).forEach(function(s){
+        var ph=specPhotos[s.id], img=(ph&&ph.length)?ph[0].img:null;
+        s.options.forEach(function(o){
+          SPECIAL_ITEMS.push({
+            id:"sp_"+s.id+"_"+o.key,
+            name:((s.headline||"Special").trim())+" · "+((o.label||"").trim()),
+            desc:(s.details||"").trim(),
+            price:+o.price||0, unit:"",
+            flavor:(s.flavor_mode!=="none") && (+o.max_flavors>0),
+            maxFlavors:+o.max_flavors||1, classicOnly:true,
+            leadDays:+s.lead_days||0, special:true, color:"#A11833", img:img
+          });
+        });
+      });
+      rebuildMenu();
     }
     if(d.gallery && d.gallery.length){
       GALLERY=d.gallery.filter(function(p){ return !p.special_id; }).map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
