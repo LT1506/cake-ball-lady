@@ -218,6 +218,16 @@
   .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
   .pay-note{text-align:center;font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin-top:9px;}
   .fee-note{text-align:center;font-size:.8rem;color:var(--cocoa-soft);font-weight:700;margin:-2px 0 12px;}
+  .pickbtn{width:100%;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff;font-family:inherit;font-size:.95rem;color:var(--cocoa);cursor:pointer;}
+  .pickbtn:hover{border-color:var(--pink);}
+  .pkcal{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;max-height:300px;overflow-y:auto;}
+  .pcm{margin-bottom:10px;}
+  .pcm-h{text-align:center;font-weight:800;color:var(--cocoa);margin-bottom:6px;font-size:.92rem;}
+  .pcm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .pcm-w{text-align:center;font-size:.64rem;color:var(--cocoa-soft);font-weight:700;padding-bottom:2px;}
+  .pcm-d{text-align:center;padding:7px 0;font-size:.85rem;border-radius:8px;border:none;background:transparent;color:#D3C7C5;font-family:inherit;}
+  button.pcm-d{background:var(--blush);color:var(--cocoa);font-weight:700;cursor:pointer;}
+  button.pcm-d:hover{background:var(--pink);color:#fff;}
 
   .modal{position:fixed;inset:0;display:none;place-items:center;z-index:90;padding:20px;}
   .modal.open{display:grid;}
@@ -455,8 +465,10 @@
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-foot">
     <div class="pk">
-      <label for="pickupDate">Pickup day</label>
-      <select id="pickupDate"><option value="">Choose a pickup day…</option></select>
+      <label for="pickupBtn">Pickup day</label>
+      <button type="button" id="pickupBtn" class="pickbtn">Choose a pickup day…</button>
+      <input type="hidden" id="pickupDate" value="">
+      <div class="pkcal" id="pkcal" hidden></div>
       <div class="hint">Pickups Wed–Sat. Orders close 2 days before, at 5pm.</div>
     </div>
     <div class="pk">
@@ -818,47 +830,61 @@
     fl.appendChild(d);
   });
 
-  // pickup days: next Thursdays/Fridays/Saturdays
-  var pickupSel=$("pickupDate");
-  upcomingPickups(9).forEach(function(d){
-    var o=document.createElement("option"); var label=fmtDate(d);
-    o.value=label; o.textContent=label; pickupSel.appendChild(o);
-  });
-  pickupSel.addEventListener("change",render);
+  // ---- pickup day: pop-up calendar (next 2 months, only valid Wed-Sat days) ----
   var LOC_NOTES={"Porch Pickup":"Ready by noon that day.","Locally Loved Boutique":"Available during the boutique's store hours.","Request another location (may incur a fee)":"We'll confirm the time and any fee with you."};
   $("pickupLoc").addEventListener("change",function(){ $("locHint").textContent = LOC_NOTES[$("pickupLoc").value]||""; render(); });
 
-  function upcomingPickups(n, minLead){
-    // Pickup days Wed(3),Thu(4),Fri(5),Sat(6). A date stays available until 5pm
-    // two days before it (Mon 5pm closes Wed, Tue 5pm closes Thu, etc.).
-    // minLead: some specials need extra days of notice; a date must be at least
-    // that many days out.
-    minLead=minLead||0;
-    var days=[3,4,5,6], out=[], now=new Date();
-    var earliest=new Date(); earliest.setHours(0,0,0,0); earliest.setDate(earliest.getDate()+minLead);
-    var d=new Date(); d.setHours(0,0,0,0);
-    var guard=0;
-    while(out.length<n && guard<400){
-      if(days.indexOf(d.getDay())>=0 && d>=earliest){
-        var cutoff=new Date(d); cutoff.setDate(cutoff.getDate()-2); cutoff.setHours(17,0,0,0);
-        if(now < cutoff) out.push(new Date(d));
-      }
-      d.setDate(d.getDate()+1); guard++;
-    }
-    return out;
-  }
-  var lastLead=0;
+  var BLOCKED_SITE=[], selectedPickup=null;
+  function pad2(n){ return (n<10?"0":"")+n; }
+  function isoDate(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+  function isoToDate(iso){ var p=iso.split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
   function cartMaxLead(){ var mx=0; Object.keys(cart).forEach(function(k){ var m=MENU.find(function(x){return x.id===cart[k].id;}); if(m&&m.leadDays&&m.leadDays>mx) mx=m.leadDays; }); return mx; }
+  function isSelectable(d, lead){
+    var dow=d.getDay();
+    if(dow<3||dow>6) return false;                         // Wed-Sat only
+    if(BLOCKED_SITE.indexOf(isoDate(d))>=0) return false;  // a day off
+    var now=new Date();
+    var cutoff=new Date(d); cutoff.setDate(cutoff.getDate()-2); cutoff.setHours(17,0,0,0);
+    if(now>=cutoff) return false;                           // closes 5pm two days before
+    var earliest=new Date(); earliest.setHours(0,0,0,0); earliest.setDate(earliest.getDate()+(lead||0));
+    if(d<earliest) return false;                            // extra notice some specials need
+    return true;
+  }
+  var PCM_MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function pickCalMonthHtml(year,month,lead){
+    var start=new Date(year,month,1).getDay(), days=new Date(year,month+1,0).getDate();
+    var html='<div class="pcm"><div class="pcm-h">'+PCM_MN[month]+' '+year+'</div><div class="pcm-grid">';
+    ["S","M","T","W","T","F","S"].forEach(function(w){ html+='<span class="pcm-w">'+w+'</span>'; });
+    for(var i=0;i<start;i++) html+='<span></span>';
+    for(var day=1;day<=days;day++){
+      var d=new Date(year,month,day);
+      if(isSelectable(d,lead)) html+='<button type="button" class="pcm-d" data-iso="'+isoDate(d)+'" data-label="'+esc(fmtDate(d))+'">'+day+'</button>';
+      else html+='<span class="pcm-d">'+day+'</span>';
+    }
+    html+='</div></div>';
+    return html;
+  }
+  function buildPickCal(){
+    var lead=cartMaxLead(), now=new Date(), y=now.getFullYear(), m=now.getMonth();
+    var y2=(m===11)?y+1:y, m2=(m+1)%12;
+    $("pkcal").innerHTML=pickCalMonthHtml(y,m,lead)+pickCalMonthHtml(y2,m2,lead);
+  }
+  $("pickupBtn").addEventListener("click",function(){
+    var cal=$("pkcal");
+    if(cal.hidden){ buildPickCal(); cal.hidden=false; } else { cal.hidden=true; }
+  });
+  $("pkcal").addEventListener("click",function(e){
+    var b=e.target.closest("button.pcm-d"); if(!b) return;
+    selectedPickup=isoToDate(b.getAttribute("data-iso"));
+    var label=b.getAttribute("data-label");
+    $("pickupDate").value=label; $("pickupBtn").textContent=label; $("pkcal").hidden=true; render();
+  });
   function syncPickupLead(){
-    var lead=cartMaxLead(); if(lead===lastLead) return; lastLead=lead;
-    var keep=pickupSel.value;
-    pickupSel.innerHTML='<option value="">Choose a pickup day…</option>';
-    var stillThere=false;
-    upcomingPickups(9, lead).forEach(function(d){
-      var label=fmtDate(d), o=document.createElement("option"); o.value=label; o.textContent=label;
-      if(label===keep) stillThere=true; pickupSel.appendChild(o);
-    });
-    pickupSel.value = stillThere ? keep : "";
+    // drop a chosen day if the cart now makes it invalid (extra lead, or it got blocked)
+    if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){
+      selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…";
+    }
+    if(!$("pkcal").hidden) buildPickCal();
   }
   function fmtDate(d){
     var wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
@@ -986,6 +1012,9 @@
   var API_BASE="https://cake-ball-admin-production.up.railway.app";
   var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout";
   function applyContent(d){
+    BLOCKED_SITE = d.blocked_dates || [];
+    if(!$("pkcal").hidden) buildPickCal();
+    if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; render(); }
     if(d.flavors && d.flavors.length){
       var classic=[],premium=[],week=[];
       d.flavors.forEach(function(f){
