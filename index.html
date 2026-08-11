@@ -100,6 +100,42 @@
   .item .fchip.sel em{color:#FFE3ED;}
   .item .flavpick.overpick .fplabel{color:var(--pink-deep);animation:nudge .3s ease;}
   @keyframes nudge{25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
+  /* Order-by-tile shop */
+  .shop-grid{grid-template-columns:1fr;max-width:640px;margin:0 auto;gap:14px;}
+  @media(max-width:820px){.shop-grid{grid-template-columns:1fr;}}
+  .tile{background:#fff;border:2px solid #F5E6EA;border-radius:var(--radius);overflow:hidden;}
+  .t-head{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;padding:12px 14px;cursor:pointer;text-align:left;font-family:inherit;}
+  .t-head:hover{background:#FFF7F9;}
+  .t-pic{width:66px;height:66px;border-radius:14px;background-size:cover;background-position:center;flex:none;}
+  .t-info{flex:1;}
+  .t-info h3{font-family:'Baloo 2';font-weight:800;color:var(--cocoa);font-size:1.15rem;margin:0;}
+  .t-info p{color:var(--cocoa-soft);font-weight:600;font-size:.85rem;margin:2px 0 0;}
+  .t-caret{font-family:'Baloo 2';font-weight:800;font-size:1.5rem;color:var(--pink-deep);width:26px;text-align:center;}
+  .t-body{padding:0 16px 16px;}
+  .t-desc{color:var(--cocoa-soft);font-size:.9rem;margin:0 0 14px;line-height:1.45;}
+  .t-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .t-row label{font-weight:800;font-size:.85rem;color:var(--cocoa);}
+  .t-row select,.tile .flavsel{padding:9px 11px;border:2px solid #F0E4E0;border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--cocoa);background:#fff;}
+  .tile .fplabel{font-weight:800;font-size:.82rem;color:var(--cocoa);margin-bottom:8px;}
+  .tile .fchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;}
+  .tile .fchips.overpick{animation:nudge .3s ease;}
+  .tile .fchip{background:#FFFDFB;border:2px solid #F0E4E0;border-radius:999px;padding:6px 11px;font-family:'Nunito';font-weight:700;font-size:.78rem;color:var(--cocoa);cursor:pointer;line-height:1.1;}
+  .tile .fchip em{font-style:normal;color:var(--pink-deep);font-size:.66rem;font-weight:800;text-transform:uppercase;margin-left:3px;}
+  .tile .fchip:hover{border-color:var(--pink);}
+  .tile .fchip.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
+  .tile .fchip.sel em{color:#FFE3ED;}
+  .tile .fnote{font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin:0 0 12px;}
+  .gtypes{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .gtype{flex:1;min-width:82px;background:#FFFDFB;border:2px solid #F0E4E0;border-radius:12px;padding:9px 6px;font-family:'Baloo 2';font-weight:800;color:var(--cocoa);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.92rem;}
+  .gtype span{font-weight:700;font-size:.8rem;color:var(--pink-deep);}
+  .gtype.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
+  .gtype.sel span{color:#fff;}
+  .tile .priced{margin:6px 0 12px;}
+  .tile .price{font-family:'Baloo 2';font-weight:800;font-size:1.5rem;color:var(--pink-deep);}
+  .tile .add{width:100%;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:12px;font-family:'Baloo 2';font-weight:800;font-size:1.02rem;cursor:pointer;}
+  .tile .add:hover{background:var(--pink-deep);}
+  .t-note{font-size:.8rem;color:var(--cocoa-soft);text-align:center;margin:10px 0 0;}
+  .t-note a{color:var(--pink-deep);font-weight:800;}
   .item .priced{display:flex;align-items:baseline;gap:5px;margin-bottom:12px;}
   .item .price{font-family:'Baloo 2';font-weight:800;font-size:1.45rem;color:var(--pink-deep);}
   .item .fnote{font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin:8px 0 0;}
@@ -539,35 +575,39 @@
     "S'mores":"#6B4A34","Salted Caramel Chocolate":"#A9713C","Chocolate Fudge Brownie":"#3E2723",
     "Coconut Cream":"#F3EDE3","Biscoff Cookie Butter":"#C7853F","Carrot Cake":"#D08A4E"
   };
+  var CLASSIC_THIS_WEEK = CLASSIC.slice();
   function fColor(f){return FLAVOR_COLOR[f]||"#F2568C";}
-  function orderFlavors(){ return CLASSIC.concat(PREMIUM_THIS_WEEK); }
-  function flavorsFor(m){ return m.classicOnly ? CLASSIC.slice() : orderFlavors(); }
   function isPremium(f){ return PREMIUM.indexOf(f) >= 0; }
-  // Mirror of the server's pricing (app/catalog.py unit_price): premium flavors
-  // add $0.50 per premium ball in a box, or $0.50 on a single pop/cakesicle.
-  function unitPrice(m, flavors){
-    var base=m.price;
-    if(!m.flavor || !flavors || !flavors.length) return base;
-    if(m.balls){
-      var prem=0; for(var i=0;i<flavors.length;i++){ if(isPremium(flavors[i])) prem++; }
-      return base + Math.round(m.balls*prem/flavors.length)*0.5;
-    }
-    return base + (isPremium(flavors[0])?0.5:0);
-  }
+  function availClassics(){ return CLASSIC_THIS_WEEK.length ? CLASSIC_THIS_WEEK : CLASSIC; }
+  function allAvail(){ return availClassics().concat(PREMIUM_THIS_WEEK); }
+  // ---- pricing, mirrors app/catalog.py exactly ----
+  function premCount(fl){ var n=0; for(var i=0;i<fl.length;i++){ if(isPremium(fl[i])) n++; } return n; }
+  function ballPrice(base, balls, fl){ return fl.length ? base + Math.round(balls*premCount(fl)/fl.length)*0.5 : base; }
+  function dozenPrice(fl, dozens, perDozen){ var b=12*dozens, pb=fl.length?Math.round(b*premCount(fl)/fl.length):0; return perDozen*dozens + pb*0.5; }
+  function singlePrice(base, fl){ return base + (fl.length && isPremium(fl[0]) ? 0.5 : 0); }
+  function dozenMaxFlavors(d){ return d<=1 ? 4 : Math.max(6, d); }
 
-  // ---------- Shop items ----------
-  var MENU = [
-    {id:"small",  name:"Small Box · 1 dozen",  desc:"One dozen signature cake balls — pick up to 4 flavors, each decorated to look like its flavor.", price:24, balls:12, unit:"/ box", flavor:true, maxFlavors:4, color:"#F2568C", img:"photos/small-box.jpg"},
-    {id:"medium", name:"Medium Box · 2 dozen", desc:"Two dozen signature cake balls — pick up to 6 flavors.",   price:48, balls:24, unit:"/ box", flavor:true, maxFlavors:6, color:"#E8447F", img:"photos/medium-box.jpg"},
-    {id:"large",  name:"Large Box · 3 dozen",  desc:"Three dozen signature cake balls — pick up to 6 flavors.", price:72, balls:36, unit:"/ box", flavor:true, maxFlavors:6, color:"#D33B72", img:"photos/large-box.jpg"},
-    {id:"pops",   name:"Signature Cake Pops",  desc:"Sold individually, same signature flavor-matched style — one flavor per pop.", price:3, unit:"each", flavor:true, maxFlavors:1, color:"#7DD8C3", img:"photos/cpop6.webp"},
-    {id:"sicle",  name:"Cakesicle",            desc:"A popsicle-shaped cake pop on a stick, dipped and decorated. One flavor each.", price:4, unit:"each", flavor:true, maxFlavors:1, classicOnly:true, color:"#8FC7F2", img:"photos/cakesicle.jpg"},
-    {id:"gs2",    name:"Gift Box · Signature (2-pack)", desc:"Two signature cake balls, boxed and ready to give.", price:5,  unit:"", flavor:false, gift:true, color:"#FFD666", img:"photos/gift-2pack.jpg"},
-    {id:"gs4",    name:"Gift Box · Signature (4-pack)", desc:"Four signature cake balls in a gift box.",           price:10, unit:"", flavor:false, gift:true, color:"#8FC7F2", img:"photos/gift-4pack.jpg"}
+  // ---------- Shop offerings (expandable tiles) ----------
+  var BASE_OFFERINGS = [
+    {kind:"dozen", id:"dozen", title:"Order by the Dozen", perDozen:24, classicOnly:false,
+     sub:"Mix your flavors · 1 to 10 dozen", img:"photos/medium-box.jpg", color:"#F2568C",
+     desc:"Signature cake balls by the dozen, each decorated to look like its flavor. Pick how many dozen, then your flavors."},
+    {kind:"gift", id:"gift", title:"Gift Boxes", img:"photos/gift-4pack.jpg", color:"#FFD666",
+     sub:"Starting at $5", desc:"Signature cake balls in a branded gift box, ready to give.",
+     opts:[{id:"gs2",label:"2-pack",price:5,balls:2,maxFlavors:2},
+           {id:"gs4",label:"4-pack",price:10,balls:4,maxFlavors:4},
+           {id:"gd12",label:"1 dozen",price:24,balls:12,maxFlavors:4}]},
+    {kind:"single", id:"pops", title:"Cake Pops", price:3, classicOnly:false, img:"photos/cpop6.webp", color:"#7DD8C3",
+     sub:"$3 each", desc:"Sold individually in the signature flavor-matched style. One flavor per pop."},
+    {kind:"single", id:"sicle", title:"Cakesicles", price:4, classicOnly:true, img:"photos/cakesicle.jpg", color:"#8FC7F2",
+     sub:"$4 each", desc:"A popsicle-shaped cake pop on a stick, dipped and decorated. One flavor each."}
   ];
-  // Buyable specials (from the admin) are appended to the shop at runtime.
-  var BASE_MENU = MENU.slice(), SPECIAL_ITEMS = [];
-  function rebuildMenu(){ MENU = BASE_MENU.concat(SPECIAL_ITEMS); buildShop(); }
+  var OFFERINGS = BASE_OFFERINGS.slice();
+  var GIFT_LOOKUP = {gs2:{base:5,balls:2,name:"Gift Box · 2-pack"}, gs4:{base:10,balls:4,name:"Gift Box · 4-pack"}, gd12:{base:24,balls:12,name:"Gift Box · 1 dozen"}};
+  var SINGLE_LOOKUP = {pops:{price:3,name:"Cake Pop"}, sicle:{price:4,name:"Cakesicle"}};
+  var DOZEN_SPECIALS = {};  // "sp_<id>_dozen" -> {perDozen,title} from content
+  function rebuildShop(){ OFFERINGS = BASE_OFFERINGS.concat(SPECIAL_OFFERINGS); renderShop(); }
+  var SPECIAL_OFFERINGS = [];
 
   // ---------- Specials (sample; she updates) ----------
   var SPECIALS = [
@@ -650,84 +690,124 @@
 
   // render shop
   var grid = $("shopGrid");
-  function buildShop(){
-   grid.innerHTML="";
-   MENU.forEach(function(m){
-    var el = document.createElement("div"); el.className="item";
-    var flavHtml = "";
-    if(m.flavor && m.maxFlavors>1){
-      var chips = flavorsFor(m).map(function(f){
-        return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(isPremium(f)?' <em>premium</em>':'')+'</button>';
-      }).join("");
-      flavHtml = '<div class="flavpick" data-max="'+m.maxFlavors+'" role="group" aria-label="Pick up to '+m.maxFlavors+' flavors for '+esc(m.name)+'">'+
-        '<div class="fplabel">Pick up to '+m.maxFlavors+' flavors <span class="fcount">0/'+m.maxFlavors+'</span></div>'+
-        '<div class="fchips">'+chips+'</div></div>'+
-        '<div class="fnote">Premium flavors add $0.50 per ball.</div>';
-    } else if(m.flavor){
-      var opts = flavorsFor(m).map(function(f){
-        return '<option value="'+esc(f)+'">'+esc(f)+(isPremium(f)?" (premium)":"")+'</option>';
-      }).join("");
-      flavHtml = '<select class="flavsel" aria-label="Flavor for '+esc(m.name)+'">'+opts+'</select>'+
-        (m.classicOnly ? '' : '<div class="fnote">Premium flavors add $0.50 each.</div>');
+  var openTiles = {};
+  function offeringFor(id){ for(var i=0;i<OFFERINGS.length;i++){ if(OFFERINGS[i].id===id) return OFFERINGS[i]; } return null; }
+  function qtyOptions(n){ var s=""; for(var i=1;i<=n;i++){ s+='<option>'+i+'</option>'; } return s; }
+  function chipHtml(list){ return list.map(function(f){ return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(isPremium(f)?' <em>premium</em>':'')+'</button>'; }).join(""); }
+  function tileBodyHtml(o){
+    if(o.kind==="dozen"){
+      var list=o.classicOnly?availClassics():allAvail();
+      return '<div class="t-row"><label>How many dozen?</label><select class="dz-qty">'+qtyOptions(10)+'</select></div>'+
+        '<div class="fplabel">Pick up to <b class="fcap">4</b> flavors — <span class="fsel">0</span> chosen</div>'+
+        '<div class="fchips">'+chipHtml(list)+'</div>'+
+        (o.classicOnly?'':'<div class="fnote">Premium flavors add $0.50 per ball.</div>')+
+        '<div class="priced"><span class="price">'+fmt(o.perDozen)+'</span></div>'+
+        '<button class="add">Add to order</button>'+
+        '<p class="t-note">More than 10 dozen? <a href="#custom">Check availability</a></p>';
     }
-    el.innerHTML =
-      (m.img
-        ? '<div class="pic" style="background-image:url(\''+m.img+'\');background-size:cover;background-position:center"></div>'
-        : '<div class="pic" style="background:linear-gradient(135deg,'+m.color+','+shade(m.color)+')"><span style="text-shadow:0 2px 6px rgba(0,0,0,.2)">'+esc(m.name)+'</span></div>')+
-      '<div class="body"><h3>'+esc(m.name)+'</h3><p>'+esc(m.desc)+'</p>'+flavHtml+
-      '<div class="priced"><span class="price">'+fmt(m.price)+'</span><span class="unit">'+esc(m.unit)+'</span></div>'+
-      '<button class="add" data-id="'+m.id+'">Add to order</button></div>';
-    grid.appendChild(el);
-   });
+    if(o.kind==="gift"){
+      var g0=o.opts[0], list2=allAvail();
+      var btns=o.opts.map(function(op,i){ return '<button type="button" class="gtype'+(i===0?' sel':'')+'" data-opt="'+op.id+'" data-balls="'+op.balls+'" data-base="'+op.price+'" data-max="'+op.maxFlavors+'">'+esc(op.label)+'<span>'+fmt(op.price)+'</span></button>'; }).join("");
+      return '<div class="gtypes">'+btns+'</div>'+
+        '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(12)+'</select></div>'+
+        '<div class="fplabel">Pick up to <b class="fcap">'+g0.maxFlavors+'</b> flavors — <span class="fsel">0</span> chosen</div>'+
+        '<div class="fchips">'+chipHtml(list2)+'</div>'+
+        '<div class="fnote">Premium flavors add $0.50 per ball.</div>'+
+        '<div class="priced"><span class="price">'+fmt(g0.price)+'</span></div>'+
+        '<button class="add">Add to order</button>';
+    }
+    var list3=o.classicOnly?availClassics():allAvail();
+    var opts=list3.map(function(f){ return '<option value="'+esc(f)+'">'+esc(f)+(isPremium(f)?' (premium)':'')+'</option>'; }).join("");
+    return '<div class="t-row"><label>Flavor</label><select class="flavsel">'+opts+'</select></div>'+
+      '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(24)+'</select></div>'+
+      (o.classicOnly?'':'<div class="fnote">Premium flavors add $0.50 each.</div>')+
+      '<div class="priced"><span class="price">'+fmt(o.price)+'</span></div>'+
+      '<button class="add">Add to order</button>';
   }
-  buildShop();
-  grid.addEventListener("click",function(e){
-    var chip=e.target.closest(".fchip");
-    if(chip){ toggleChip(chip); return; }
-    var b=e.target.closest(".add"); if(!b) return;
-    var item=b.closest(".item");
-    var pick=item.querySelector(".flavpick");
-    var flavors=[];
-    if(pick){
-      flavors=[].slice.call(pick.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");});
-      if(!flavors.length){ pick.classList.remove("overpick"); void pick.offsetWidth; pick.classList.add("overpick"); return; }
-    } else {
-      var sel=item.querySelector(".flavsel");
-      if(sel) flavors=[sel.value];
+  function renderShop(){
+    grid.innerHTML="";
+    OFFERINGS.forEach(function(o){
+      var el=document.createElement("div"); el.className="tile"; el.setAttribute("data-key",o.id);
+      var open=!!openTiles[o.id];
+      var pic=o.img?'<div class="t-pic" style="background-image:url(\''+esc(o.img)+'\')"></div>'
+        :'<div class="t-pic" style="background:linear-gradient(135deg,'+o.color+','+shade(o.color)+')"></div>';
+      el.innerHTML='<button type="button" class="t-head">'+pic+'<div class="t-info"><h3>'+esc(o.title)+'</h3><p>'+esc(o.sub||"")+'</p></div><span class="t-caret">'+(open?"−":"+")+'</span></button>'+
+        '<div class="t-body"'+(open?"":" hidden")+'><p class="t-desc">'+esc(o.desc||"")+'</p>'+tileBodyHtml(o)+'</div>';
+      grid.appendChild(el);
+      if(open) refreshTile(el);
+    });
+  }
+  function tileFlavors(el){ return [].slice.call(el.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");}); }
+  function tileCap(el,o){
+    if(o.kind==="dozen") return dozenMaxFlavors(+el.querySelector(".dz-qty").value);
+    if(o.kind==="gift") return +el.querySelector(".gtype.sel").getAttribute("data-max");
+    return 1;
+  }
+  function refreshTile(el){
+    var o=offeringFor(el.getAttribute("data-key")); if(!o) return;
+    var price=0, fl;
+    if(o.kind==="dozen"){ fl=tileFlavors(el); price=dozenPrice(fl,+el.querySelector(".dz-qty").value,o.perDozen); }
+    else if(o.kind==="gift"){ fl=tileFlavors(el); var g=el.querySelector(".gtype.sel"); price=ballPrice(+g.getAttribute("data-base"),+g.getAttribute("data-balls"),fl)*(+el.querySelector(".unit-qty").value); }
+    else { var s=el.querySelector(".flavsel"); fl=s?[s.value]:[]; price=singlePrice(o.price,fl)*(+el.querySelector(".unit-qty").value); }
+    var pe=el.querySelector(".price"); if(pe) pe.textContent=fmt(price);
+    if(o.kind==="dozen"||o.kind==="gift"){
+      var cap=tileCap(el,o), n=el.querySelectorAll(".fchip.sel").length;
+      var fc=el.querySelector(".fcap"); if(fc) fc.textContent=cap;
+      var fs=el.querySelector(".fsel"); if(fs) fs.textContent=n;
     }
-    var r=b.getBoundingClientRect();
-    add(b.dataset.id, flavors);
+  }
+  function enforceCap(el){
+    var o=offeringFor(el.getAttribute("data-key")), cap=tileCap(el,o);
+    var sels=[].slice.call(el.querySelectorAll(".fchip.sel"));
+    while(sels.length>cap){ sels.pop().classList.remove("sel"); }
+  }
+  renderShop();
+  grid.addEventListener("click",function(e){
+    var head=e.target.closest(".t-head");
+    if(head){ var t=head.closest(".tile"), k=t.getAttribute("data-key");
+      openTiles[k]=!openTiles[k]; var body=t.querySelector(".t-body"); body.hidden=!openTiles[k];
+      t.querySelector(".t-caret").textContent=openTiles[k]?"−":"+"; if(openTiles[k]) refreshTile(t); return; }
+    var chip=e.target.closest(".fchip");
+    if(chip){ var t2=chip.closest(".tile"), o=offeringFor(t2.getAttribute("data-key")), cap=tileCap(t2,o);
+      if(!chip.classList.contains("sel") && t2.querySelectorAll(".fchip.sel").length>=cap) return;
+      chip.classList.toggle("sel");
+      if(motionOK() && chip.classList.contains("sel")){ chip.classList.remove("justsel"); void chip.offsetWidth; chip.classList.add("justsel"); }
+      refreshTile(t2); return; }
+    var gt=e.target.closest(".gtype");
+    if(gt){ var t3=gt.closest(".tile");
+      [].slice.call(t3.querySelectorAll(".gtype")).forEach(function(b){b.classList.remove("sel");});
+      gt.classList.add("sel"); enforceCap(t3); refreshTile(t3); return; }
+    var add=e.target.closest(".add");
+    if(add){ var tile=add.closest(".tile"); addFromTile(tile, add); }
+  });
+  grid.addEventListener("change",function(e){
+    var t=e.target.closest(".tile"); if(!t) return;
+    if(e.target.classList.contains("dz-qty")) enforceCap(t);
+    refreshTile(t);
+  });
+  function addFromTile(tile, btn){
+    var o=offeringFor(tile.getAttribute("data-key")); if(!o) return;
+    var id, flavors, qty;
+    if(o.kind==="dozen"){ id=o.id; qty=+tile.querySelector(".dz-qty").value; flavors=tileFlavors(tile);
+      if(!flavors.length) return flashPick(tile); }
+    else if(o.kind==="gift"){ id=tile.querySelector(".gtype.sel").getAttribute("data-opt"); qty=+tile.querySelector(".unit-qty").value; flavors=tileFlavors(tile);
+      if(!flavors.length) return flashPick(tile); }
+    else { var s=tile.querySelector(".flavsel"); id=o.id; flavors=s?[s.value]:[]; qty=+tile.querySelector(".unit-qty").value; }
+    var r=btn.getBoundingClientRect();
+    addQty(id, flavors, qty);
     confettiBurst(r.left+r.width/2, r.top+r.height/2);
     openCart();
-  });
-  function cardFlavors(itemEl){
-    var pick=itemEl.querySelector(".flavpick");
-    if(pick) return [].slice.call(pick.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");});
-    var sel=itemEl.querySelector(".flavsel"); return sel?[sel.value]:[];
   }
-  function updateCardPrice(itemEl){
-    if(!itemEl) return;
-    var b=itemEl.querySelector(".add"); if(!b) return;
-    var m=MENU.find(function(x){return x.id===b.dataset.id;}); if(!m) return;
-    var p=itemEl.querySelector(".price"); if(p) p.textContent=fmt(unitPrice(m, cardFlavors(itemEl)));
-  }
-  function toggleChip(chip){
-    var pick=chip.closest(".flavpick"), max=+pick.getAttribute("data-max");
-    var n=pick.querySelectorAll(".fchip.sel").length;
-    if(!chip.classList.contains("sel") && n>=max) return; // at the limit
-    chip.classList.toggle("sel");
-    pick.classList.remove("overpick");
-    if(motionOK() && chip.classList.contains("sel")){ chip.classList.remove("justsel"); void chip.offsetWidth; chip.classList.add("justsel"); }
-    pick.querySelector(".fcount").textContent = pick.querySelectorAll(".fchip.sel").length+"/"+max;
-    updateCardPrice(pick.closest(".item"));
-  }
-  grid.addEventListener("change",function(e){ if(e.target.classList && e.target.classList.contains("flavsel")) updateCardPrice(e.target.closest(".item")); });
+  function flashPick(tile){ var f=tile.querySelector(".fchips"); if(f){ f.classList.remove("overpick"); void f.offsetWidth; f.classList.add("overpick"); } }
 
   // render flavor chips
   var cc=$("classicChips"), pc=$("premiumChips");
   function buildFlavorChips(){
     cc.innerHTML=""; pc.innerHTML="";
-    CLASSIC.forEach(function(f){ cc.innerHTML += '<span class="chip"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+'</span>'; });
+    CLASSIC.forEach(function(f){
+      var on=CLASSIC_THIS_WEEK.indexOf(f)>=0;
+      cc.innerHTML += '<span class="chip '+(on?'on':'off')+'"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+(on?' ✓':'')+'</span>';
+    });
     PREMIUM.forEach(function(f){
       var on=PREMIUM_THIS_WEEK.indexOf(f)>=0;
       pc.innerHTML += '<span class="chip '+(on?'on':'off')+'">'+esc(f)+(on?' ✓':'')+'</span>';
@@ -838,7 +918,7 @@
   function pad2(n){ return (n<10?"0":"")+n; }
   function isoDate(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
   function isoToDate(iso){ var p=iso.split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
-  function cartMaxLead(){ var mx=0; Object.keys(cart).forEach(function(k){ var m=MENU.find(function(x){return x.id===cart[k].id;}); if(m&&m.leadDays&&m.leadDays>mx) mx=m.leadDays; }); return mx; }
+  function cartMaxLead(){ var mx=0; Object.keys(cart).forEach(function(k){ var sp=DOZEN_SPECIALS[cart[k].id]; if(sp&&sp.leadDays&&sp.leadDays>mx) mx=sp.leadDays; }); return mx; }
   function isSelectable(d, lead){
     var dow=d.getDay();
     if(dow<3||dow>6) return false;                         // Wed-Sat only
@@ -894,8 +974,25 @@
 
   // cart ops
   function keyOf(id,flavors){return id+"::"+(flavors&&flavors.length?flavors.slice().sort().join("|"):"");}
-  function add(id,flavors){var k=keyOf(id,flavors); if(cart[k])cart[k].qty++; else cart[k]={id:id,flavors:flavors||[],qty:1}; render();}
-  function chg(k,delta){if(cart[k]){cart[k].qty+=delta; if(cart[k].qty<=0) delete cart[k];} render();}
+  function isDozenId(id){ return id==="dozen" || !!DOZEN_SPECIALS[id]; }
+  function isGiftId(id){ return !!GIFT_LOOKUP[id]; }
+  function addQty(id,flavors,n){ n=n||1; var k=keyOf(id,flavors);
+    if(cart[k]) cart[k].qty+=n; else cart[k]={id:id,flavors:flavors||[],qty:n};
+    if(isDozenId(id) && cart[k].qty>10) cart[k].qty=10;
+    render(); }
+  function chg(k,delta){ if(cart[k]){ cart[k].qty+=delta; if(isDozenId(cart[k].id)&&cart[k].qty>10)cart[k].qty=10; if(cart[k].qty<=0) delete cart[k]; } render(); }
+  function lineTotal(line){ var id=line.id, fl=line.flavors||[], q=line.qty;
+    if(id==="dozen") return dozenPrice(fl,q,24);
+    if(DOZEN_SPECIALS[id]) return dozenPrice(fl,q,DOZEN_SPECIALS[id].perDozen);
+    if(GIFT_LOOKUP[id]) return ballPrice(GIFT_LOOKUP[id].base,GIFT_LOOKUP[id].balls,fl)*q;
+    if(SINGLE_LOOKUP[id]) return singlePrice(SINGLE_LOOKUP[id].price,fl)*q;
+    return 0; }
+  function cartName(line){ var id=line.id, q=line.qty;
+    if(id==="dozen") return q+" dozen cake balls";
+    if(DOZEN_SPECIALS[id]) return DOZEN_SPECIALS[id].title+" · "+q+" dozen";
+    if(GIFT_LOOKUP[id]) return GIFT_LOOKUP[id].name;
+    if(SINGLE_LOOKUP[id]) return SINGLE_LOOKUP[id].name;
+    return id; }
 
   function render(){
     syncPickupLead();
@@ -903,18 +1000,17 @@
     var total=0,count=0,hasGift=false,keys=Object.keys(cart);
     if(!keys.length){ items.innerHTML='<div class="cart-empty">Your order is empty.<br>Add some cake balls!</div>'; }
     keys.forEach(function(k,ix){
-      var line=cart[k], m=MENU.find(function(x){return x.id===line.id;});
-      var up=unitPrice(m,line.flavors); total+=up*line.qty; count+=line.qty;
-      if(m.gift) hasGift=true;
+      var line=cart[k], lt=lineTotal(line); total+=lt; count+=line.qty;
+      if(isGiftId(line.id)) hasGift=true;
       var flavs=line.flavors||[];
-      var dotColor=flavs.length?fColor(flavs[0]):m.color;
+      var dotColor=flavs.length?fColor(flavs[0]):"#F2568C";
       var sub=flavs.length?'<small>'+esc(flavs.join(", "))+'</small>':'';
       var row=document.createElement("div"); row.className="ci";
       if(motionOK()) row.style.animationDelay=(Math.min(ix,6)*40)+"ms";
       row.innerHTML='<span class="cidot" style="background:'+dotColor+'"></span>'+
-        '<div style="flex:1"><div class="ciname">'+esc(m.name)+sub+'</div>'+
+        '<div style="flex:1"><div class="ciname">'+esc(cartName(line))+sub+'</div>'+
         '<div class="qty"><button data-k="'+k+'" data-d="-1">&minus;</button><span>'+line.qty+'</span><button data-k="'+k+'" data-d="1">+</button></div></div>'+
-        '<span class="ciprice">'+fmt(up*line.qty)+'</span>';
+        '<span class="ciprice">'+fmt(lt)+'</span>';
       items.appendChild(row);
     });
     $("cartTotal").textContent=fmt(total);
@@ -1016,13 +1112,13 @@
     if(!$("pkcal").hidden) buildPickCal();
     if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; render(); }
     if(d.flavors && d.flavors.length){
-      var classic=[],premium=[],week=[];
+      var classic=[],classicWk=[],premium=[],week=[];
       d.flavors.forEach(function(f){
         var name=(f.name||"").trim(); if(!name) return;
-        if((f.type||"").toLowerCase().indexOf("premium")>=0){ premium.push(name); if(f.available){ week.push(name); } }
-        else { classic.push(name); }
+        if((f.type||"").toLowerCase().indexOf("premium")>=0){ premium.push(name); if(f.available) week.push(name); }
+        else { classic.push(name); if(f.available) classicWk.push(name); }
       });
-      if(classic.length||premium.length){ CLASSIC=classic; PREMIUM=premium; PREMIUM_THIS_WEEK=week; buildShop(); buildFlavorChips(); }
+      if(classic.length||premium.length){ CLASSIC=classic; CLASSIC_THIS_WEEK=classicWk; PREMIUM=premium; PREMIUM_THIS_WEEK=week; }
     }
     if(d.specials && d.specials.length){
       var specPhotos={};
@@ -1035,24 +1131,19 @@
         return {tag:tag, title:(s.headline||"").trim(), body:(s.details||"").trim(), banner:!!s.banner, holiday:/holiday|order ahead/i.test(tag), photos:specPhotos[s.id]||[]};
       });
       buildSpecials();
-      // Buyable specials become shoppable cards (one per size option) in the shop.
-      SPECIAL_ITEMS=[];
-      d.specials.filter(function(s){ return s.buyable && s.options && s.options.length; }).forEach(function(s){
-        var ph=specPhotos[s.id], img=(ph&&ph.length)?ph[0].img:null;
-        s.options.forEach(function(o){
-          SPECIAL_ITEMS.push({
-            id:"sp_"+s.id+"_"+o.key,
-            name:((s.headline||"Special").trim())+" · "+((o.label||"").trim()),
-            desc:(s.details||"").trim(),
-            price:+o.price||0, unit:"",
-            flavor:(s.flavor_mode!=="none") && (+o.max_flavors>0),
-            maxFlavors:+o.max_flavors||1, classicOnly:true,
-            leadDays:+s.lead_days||0, special:true, color:"#A11833", img:img
-          });
-        });
+      // Buyable by-the-dozen specials become "Order by the Dozen" shop tiles.
+      SPECIAL_OFFERINGS=[]; DOZEN_SPECIALS={};
+      d.specials.filter(function(s){ return s.buyable && s.dozen_mode; }).forEach(function(s){
+        var ph=specPhotos[s.id], img=(ph&&ph.length)?ph[0].img:null, per=+s.price_per_dozen||0;
+        var id="sp_"+s.id+"_dozen", title=(s.headline||"Special").trim();
+        SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per,
+          classicOnly:(s.flavor_mode!=="all"), sub:"$"+per+"/dozen · 1 to "+(s.max_dozen||10)+" dozen",
+          desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:+s.lead_days||0});
+        DOZEN_SPECIALS[id]={perDozen:per, title:title, leadDays:+s.lead_days||0};
       });
-      rebuildMenu();
     }
+    rebuildShop();
+    buildFlavorChips();
     if(d.gallery && d.gallery.length){
       GALLERY=d.gallery.filter(function(p){ return !p.special_id; }).map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
       renderGallery();
