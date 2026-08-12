@@ -254,6 +254,10 @@
   .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
   .pay-note{text-align:center;font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin-top:9px;}
   .fee-note{text-align:center;font-size:.8rem;color:var(--cocoa-soft);font-weight:700;margin:-2px 0 12px;}
+  .paysel{display:flex;gap:6px;}
+  .payopt{flex:1;background:#fff;border:2px solid var(--line);border-radius:10px;padding:9px 4px;font-family:inherit;font-weight:800;font-size:.82rem;color:var(--cocoa);cursor:pointer;}
+  .payopt.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
+  .ci-input{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;}
   .pickbtn{width:100%;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff;font-family:inherit;font-size:.95rem;color:var(--cocoa);cursor:pointer;}
   .pickbtn:hover{border-color:var(--pink);}
   .pkcal{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;max-height:300px;overflow-y:auto;}
@@ -517,8 +521,23 @@
       </select>
       <div class="hint" id="locHint"></div>
     </div>
+    <div class="pk">
+      <label>Payment</label>
+      <div class="paysel" id="paySel">
+        <button type="button" class="payopt sel" data-pay="card">Card now</button>
+        <button type="button" class="payopt" data-pay="cash">Cash at pickup</button>
+        <button type="button" class="payopt" data-pay="venmo">Venmo</button>
+      </div>
+    </div>
+    <div class="pk" id="contactFields" hidden>
+      <label for="ordName">Your name</label>
+      <input class="ci-input" id="ordName" placeholder="Name">
+      <label for="ordContact" style="margin-top:8px;">Phone or email</label>
+      <input class="ci-input" id="ordContact" placeholder="Phone or email">
+      <div class="hint" id="payHint"></div>
+    </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
-    <p class="fee-note">+3% card fee added at checkout</p>
+    <p class="fee-note" id="feeNote">+3% card fee added at checkout</p>
     <p class="gift-warn" id="giftNote" hidden></p>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
     <p class="pay-note">Have a promo code? Enter it on the payment page. Secure card payment powered by Stripe, straight to The Cake Ball Lady.</p>
@@ -1024,13 +1043,33 @@
     if(hasGift && !giftMinOk){ note.hidden=false; note.textContent="Gift boxes need a "+fmt(GIFT_MIN)+" minimum order — add "+fmt(GIFT_MIN-total)+" more."; }
     else { note.hidden=true; }
     var hasDate=$("pickupDate").value!=="", hasLoc=$("pickupLoc").value!=="";
+    var needsContact = payMethod!=="card";
+    var hasContact = !needsContact || ($("ordName").value.trim() && $("ordContact").value.trim());
     var btn=$("checkoutBtn");
-    btn.disabled = count===0 || !giftMinOk || !hasDate || !hasLoc;
+    btn.disabled = count===0 || !giftMinOk || !hasDate || !hasLoc || !hasContact;
+    var payLabel = payMethod==="card" ? "Checkout & pay by card" : (payMethod==="venmo" ? "Place order (pay by Venmo)" : "Place order (cash at pickup)");
     btn.textContent = count===0 ? "Add something to order"
       : (!giftMinOk ? "Gift boxes need a $20 minimum"
       : (!hasDate ? "Choose a pickup day"
-      : (!hasLoc ? "Choose a pickup location" : "Checkout & pay by card")));
+      : (!hasLoc ? "Choose a pickup location"
+      : (!hasContact ? "Add your name & contact" : payLabel))));
   }
+  // payment method selector
+  var payMethod="card", VENMO_HANDLE="";
+  $("paySel").addEventListener("click",function(e){
+    var b=e.target.closest(".payopt"); if(!b) return;
+    payMethod=b.getAttribute("data-pay");
+    [].slice.call(this.querySelectorAll(".payopt")).forEach(function(x){x.classList.remove("sel");});
+    b.classList.add("sel");
+    $("contactFields").hidden = (payMethod==="card");
+    $("feeNote").hidden = (payMethod!=="card");
+    var ph=$("payHint");
+    if(payMethod==="venmo") ph.textContent = VENMO_HANDLE ? ("You'll send your total to "+VENMO_HANDLE+" on Venmo after ordering.") : "You'll get Venmo details to send your payment after ordering.";
+    else if(payMethod==="cash") ph.textContent = "Pay cash when you pick up your order.";
+    else ph.textContent="";
+    render();
+  });
+  ["ordName","ordContact"].forEach(function(id){ $(id).addEventListener("input",render); });
   $("cartItems").addEventListener("click",function(e){
     var b=e.target.closest("button[data-k]"); if(!b) return;
     chg(b.dataset.k, parseInt(b.dataset.d,10));
@@ -1048,15 +1087,40 @@
   $("checkoutBtn").addEventListener("click",function(){
     var date=$("pickupDate").value, loc=$("pickupLoc").value;
     var items=Object.keys(cart).map(function(k){ return {id:cart[k].id, qty:cart[k].qty, flavors:cart[k].flavors||[]}; });
-    var btn=$("checkoutBtn"); btn.disabled=true; btn.textContent="Taking you to checkout…";
-    fetch(CHECKOUT_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc})})
+    var btn=$("checkoutBtn");
+    if(payMethod==="card"){
+      btn.disabled=true; btn.textContent="Taking you to checkout…";
+      fetch(CHECKOUT_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc})})
+        .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
+        .then(function(r){
+          if(r.ok && r.j && r.j.url){ window.location.href=r.j.url; }
+          else { render(); showModal("&#9888;&#65039;","One moment","We couldn't start checkout"+((r.j&&r.j.detail)?": "+r.j.detail:"")+". Please try again."); }
+        })
+        .catch(function(){ render(); showModal("&#9888;&#65039;","One moment","We couldn't reach checkout right now. Please try again in a bit."); });
+      return;
+    }
+    // cash / venmo: place the order (unpaid), no card fee
+    var name=$("ordName").value.trim(), contact=$("ordContact").value.trim();
+    var totalTxt=$("cartTotal").textContent;
+    btn.disabled=true; btn.textContent="Placing your order…";
+    fetch(PLACE_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc,name:name,contact:contact,method:payMethod})})
       .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
       .then(function(r){
-        if(r.ok && r.j && r.j.url){ window.location.href=r.j.url; }
-        else { render(); showModal("&#9888;&#65039;","One moment","We couldn't start checkout"+((r.j&&r.j.detail)?": "+r.j.detail:"")+". Please try again."); }
+        if(r.ok){
+          var t=(r.j&&r.j.total!=null)?("$"+r.j.total.toFixed(2)):totalTxt;
+          cart={}; render(); closeCart();
+          if(payMethod==="venmo"){
+            showModal("&#128184;","Order placed!","Thanks "+name+"! Your order for "+t+" is in. Send "+t+" to "+(VENMO_HANDLE||"The Cake Ball Lady")+" on Venmo to confirm it. She'll mark it paid once it comes through.");
+          } else {
+            showModal("&#127874;","Order placed!","Thanks "+name+"! Your order for "+t+" is in. Just bring cash at pickup and she'll have it ready for you.");
+          }
+        } else {
+          render(); showModal("&#9888;&#65039;","One moment","We couldn't place your order"+((r.j&&r.j.detail)?": "+r.j.detail:"")+". Please try again.");
+        }
       })
-      .catch(function(){ render(); showModal("&#9888;&#65039;","One moment","We couldn't reach checkout right now. Please try again in a bit."); });
+      .catch(function(){ render(); showModal("&#9888;&#65039;","One moment","We couldn't reach the server right now. Please try again in a bit."); });
   });
 
   // custom form -> logs to her Orders board; falls back to email if it can't be sent
@@ -1108,9 +1172,10 @@
 
   // ---- Live content from the admin backend (falls back to the built-in data) ----
   var API_BASE="https://cake-ball-admin-production.up.railway.app";
-  var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout";
+  var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout", PLACE_URL=API_BASE+"/api/place-order";
   function applyContent(d){
     BLOCKED_SITE = d.blocked_dates || [];
+    VENMO_HANDLE = d.venmo_handle || "";
     if(!$("pkcal").hidden) buildPickCal();
     if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; render(); }
     if(d.flavors && d.flavors.length){
