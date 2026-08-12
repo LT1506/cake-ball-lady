@@ -1086,12 +1086,13 @@
   // checkout
   $("checkoutBtn").addEventListener("click",function(){
     var date=$("pickupDate").value, loc=$("pickupLoc").value;
+    var pickIso=selectedPickup?isoDate(selectedPickup):"";
     var items=Object.keys(cart).map(function(k){ return {id:cart[k].id, qty:cart[k].qty, flavors:cart[k].flavors||[]}; });
     var btn=$("checkoutBtn");
     if(payMethod==="card"){
       btn.disabled=true; btn.textContent="Taking you to checkout…";
       fetch(CHECKOUT_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc})})
+        body:JSON.stringify({items:items,pickup_date:date,pickup_iso:pickIso,pickup_location:loc})})
         .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
         .then(function(r){
           if(r.ok && r.j && r.j.url){ window.location.href=r.j.url; }
@@ -1105,7 +1106,7 @@
     var totalTxt=$("cartTotal").textContent;
     btn.disabled=true; btn.textContent="Placing your order…";
     fetch(PLACE_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({items:items,pickup_date:date,pickup_location:loc,name:name,contact:contact,method:payMethod})})
+      body:JSON.stringify({items:items,pickup_date:date,pickup_iso:pickIso,pickup_location:loc,name:name,contact:contact,method:payMethod})})
       .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
       .then(function(r){
         if(r.ok){
