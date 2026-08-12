@@ -505,7 +505,7 @@
       <button type="button" id="pickupBtn" class="pickbtn">Choose a pickup day…</button>
       <input type="hidden" id="pickupDate" value="">
       <div class="pkcal" id="pkcal" hidden></div>
-      <div class="hint">Pickups Wed–Sat. Orders close 2 days before, at 5pm.</div>
+      <div class="hint">Pickups Mon–Sat. Orders close 2 days before, at 5pm.</div>
     </div>
     <div class="pk">
       <label for="pickupLoc">Pickup location</label>
@@ -677,12 +677,14 @@
 
   // ---------- FAQ ----------
   var FAQ = [
-    {q:"What's the difference between signature and custom?", a:"Signature cake balls are decorated to look like their flavor — vanilla is white, chocolate is brown, red velvet is red, and so on. They come in Small (1 dozen, $24, up to 4 flavors), Medium (2 dozen, $48) and Large (3 dozen, $72) boxes, with up to 6 flavors in the Medium and Large. Custom orders (from $26/dozen) include 2 colors of your choice beyond white and brown and are 2 flavors per dozen, so we can match your theme, event, or team."},
-    {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may also need a little extra turnaround time, so the sooner you reach out, the better."},
-    {q:"What flavors can I get?", a:"Classic flavors (chocolate, vanilla, funfetti, strawberry, lemon, red velvet, cookies'n cream, cinnamon crumb) are available year-round. Premium flavors rotate week to week — check the Flavors section for what's available now, or request one on a custom order. A Small box (1 dozen) can mix up to 4 flavors; Medium and Large boxes up to 6; custom dozens are 2 flavors each."},
-    {q:"When and where is pickup?", a:"Pickups are Wednesdays, Thursdays, Fridays, and Saturdays, at Porch Pickup or Locally Loved Boutique. Ordering for each day closes 2 days before at 5pm (so Wednesday pickups close Monday at 5pm, Thursday closes Tuesday, and so on). You can request another day or location, which may incur a small extra fee."},
-    {q:"Do you sell cake pops and gift boxes?", a:"Yes! Cake pops are $3 each in the same signature style. Signature gift boxes ($5 for a 2-pack, $10 for a 4-pack) can be added right here on the site. Custom-decoration gift boxes ($6 / $12) are ordered through a custom order. Cakesicles are $4 each and can be added right here on the site. Orders that include a gift box have a $20 minimum (your cake balls and pops count toward it)."},
-    {q:"How do I pay?", a:"Set-price items are paid by card right here on the site. For custom orders, we send you a quote first, then a link to pay by card once it's priced."}
+    {q:"What's the difference between signature and custom?", a:"Signature cake balls are decorated to look like their flavor: vanilla is white, chocolate is brown, red velvet is red, and so on. Custom orders are created to match your theme, event, or team. Just let me know the color scheme you have in mind and send an inspiration picture or color swatch. Custom orders start at $26/dozen and include 2 colors beyond white and brown. More colors, more intricate drizzle details, and add-ons (numbers, flowers, etc.) cost a little extra."},
+    {q:"How much notice do custom orders need?", a:"Custom orders need about 2 weeks notice. Premium flavors may need a little extra turnaround time, so the sooner you reach out, the better. That said, if you need a custom order sooner, just ask. Depending on my schedule, I may be able to accommodate you. Rush orders may incur an additional fee."},
+    {q:"What flavors can I get?", a:"Classic flavors are available year-round. Premium flavors rotate week to week, so check the Flavors section for what's available now, or request one on a custom order. When you order by the dozen, a single dozen can mix up to 4 flavors, and 2 or more dozen can mix up to 6 (larger orders can include even more). Custom dozens are 2 flavors each. Don't see a flavor you're hoping for? Just ask. Most flavors can be made upon request."},
+    {q:"When and where is pickup?", a:"Porch Pickup is about 15 minutes north of Morgan Ave. along I-69, near Freudenberg's Mini Mart (an exact address is sent in your confirmation email). Your order will be ready by noon of your pickup date, unless otherwise specified. Locally Loved Boutique is at 5600 East Virginia Street on the east side of Evansville; stop by during store hours the day of your pickup (Mon to Wed 11 to 5, Thu 11 to 6, Fri 11 to 5, Sat 10 to 4, closed Sunday). Ordering for each day closes 2 days before at 5pm (so Wednesday pickups close Monday at 5pm, Thursday closes Tuesday, and so on). You can request another day or location, which may incur a small extra fee. Holidays and special orders may have designated pickup times and locations, released during Holiday ordering."},
+    {q:"Why are certain dates blocked off for pickup?", a:"Holidays are a busy time for The Cake Ball Lady, so signature and custom ordering won't be available in the week(s) leading up to certain holidays. If your event falls around a major holiday, please reach out to see if I can accommodate your request. During non-holiday weeks, ordering closes at least 2 days before your pickup date. Every order takes time and attention to detail to make it just right. Thank you for your understanding!"},
+    {q:"When can I order for upcoming holidays?", a:"New color schemes and assortment boxes with seasonal flavors are always something to look forward to during the holidays. Specific ordering windows open to accommodate new designs and special pickup times and locations, usually about 3 weeks before the holiday, announced on social media. Join the seasonal and holiday email list to be notified when holiday ordering goes live:", link:{url:"https://forms.gle/3aVPioCepKNB3qxg8", text:"Join the Holiday email list"}},
+    {q:"What is a Home Based Vendor?", a:"A small, home-based food business where delicious, approved, shelf-stable treats are lovingly made in a private home kitchen following Indiana's food safety guidelines. The Cake Ball Lady has been a Home Based Vendor for over 9 years. Thank you for your continued business!"},
+    {q:"How do I pay?", a:"Set-price items are paid by card right here on the site, powered by Stripe. For custom orders, I send you a quote first, then a link to pay by card once it's priced."}
   ];
 
   // ---------- Cart (keyed by item + flavor) ----------
@@ -906,7 +908,7 @@
   var fl=$("faqList");
   FAQ.forEach(function(f){
     var d=document.createElement("details"); d.className="faq";
-    d.innerHTML='<summary>'+esc(f.q)+'</summary><div class="ans">'+esc(f.a)+'</div>';
+    d.innerHTML='<summary>'+esc(f.q)+'</summary><div class="ans">'+esc(f.a)+(f.link?' <a href="'+esc(f.link.url)+'" target="_blank" rel="noopener" style="color:var(--pink-deep);font-weight:800;">'+esc(f.link.text)+'</a>':'')+'</div>';
     fl.appendChild(d);
   });
 
@@ -921,7 +923,7 @@
   function cartMaxLead(){ var mx=0; Object.keys(cart).forEach(function(k){ var sp=DOZEN_SPECIALS[cart[k].id]; if(sp&&sp.leadDays&&sp.leadDays>mx) mx=sp.leadDays; }); return mx; }
   function isSelectable(d, lead){
     var dow=d.getDay();
-    if(dow<3||dow>6) return false;                         // Wed-Sat only
+    if(dow<1||dow>6) return false;                         // Mon-Sat only (closed Sunday)
     if(BLOCKED_SITE.indexOf(isoDate(d))>=0) return false;  // a day off
     var now=new Date();
     var cutoff=new Date(d); cutoff.setDate(cutoff.getDate()-2); cutoff.setHours(17,0,0,0);
