@@ -170,6 +170,7 @@
   .chip{background:var(--blush);border:2px solid #F5D9E1;border-radius:999px;padding:7px 15px;font-weight:800;font-size:.9rem;color:var(--cocoa);}
   .chip.on{background:var(--mint);border-color:var(--mint);color:#063A2C;}
   .chip.off{opacity:.5;}
+  .fonly{font-style:normal;font-size:.72rem;font-weight:700;color:var(--pink-deep);opacity:.8;}
   .week-flag{display:inline-block;background:var(--mint);color:#063A2C;font-weight:800;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding:4px 11px;border-radius:999px;margin-bottom:14px;}
   .flav-note{margin-top:16px;font-size:.85rem;color:var(--cocoa-soft);font-weight:600;}
 
@@ -632,6 +633,15 @@
   function availClassics(){ return fullMenu() ? CLASSIC.slice() : (CLASSIC_THIS_WEEK.length ? CLASSIC_THIS_WEEK : CLASSIC); }
   function availPremium(){ return fullMenu() ? PREMIUM.slice() : PREMIUM_THIS_WEEK; }
   function allAvail(){ return availClassics().concat(availPremium()); }
+  // which forms each flavor is sold in ("ball","pop","cakesicle"); unknown = all forms
+  var FLAVOR_FORMS = {};
+  function hasForm(name, form){ var fs=FLAVOR_FORMS[name]; return !fs || fs.indexOf(form)>=0; }
+  // flavor names for a given form (ball/pop/cakesicle), date-gated, optionally incl. premium
+  function flavorsForForm(form, includePremium){
+    var list=availClassics().slice();
+    if(includePremium) list=list.concat(availPremium());
+    return list.filter(function(f){ return hasForm(f, form); });
+  }
   // ---- pricing, mirrors app/catalog.py exactly ----
   function premCount(fl){ var n=0; for(var i=0;i<fl.length;i++){ if(isPremium(fl[i])) n++; } return n; }
   function ballPrice(base, balls, fl){ return fl.length ? base + Math.round(balls*premCount(fl)/fl.length)*0.5 : base; }
@@ -641,17 +651,17 @@
 
   // ---------- Shop offerings (expandable tiles) ----------
   var BASE_OFFERINGS = [
-    {kind:"dozen", id:"dozen", title:"Order by the Dozen", perDozen:24, classicOnly:false,
+    {kind:"dozen", id:"dozen", title:"Order by the Dozen", perDozen:24, classicOnly:false, form:"ball",
      sub:"Mix your flavors · 1 to 10 dozen", img:"photos/medium-box.jpg", color:"#F2568C",
      desc:"Signature cake balls by the dozen, each decorated to look like its flavor. Pick how many dozen, then your flavors."},
-    {kind:"gift", id:"gift", title:"Gift Boxes", img:"photos/gift-4pack.jpg", color:"#FFD666",
+    {kind:"gift", id:"gift", title:"Gift Boxes", img:"photos/gift-4pack.jpg", color:"#FFD666", form:"ball",
      sub:"Starting at $5", desc:"Signature cake balls in a branded gift box, ready to give.",
      opts:[{id:"gs2",label:"2-pack",price:5,balls:2,maxFlavors:2},
            {id:"gs4",label:"4-pack",price:10,balls:4,maxFlavors:4},
            {id:"gd12",label:"1 dozen",price:24,balls:12,maxFlavors:4}]},
-    {kind:"single", id:"pops", title:"Cake Pops", price:3, classicOnly:false, img:"photos/cake-pops.jpg", color:"#7DD8C3",
+    {kind:"single", id:"pops", title:"Cake Pops", price:3, classicOnly:false, form:"pop", img:"photos/cake-pops.jpg", color:"#7DD8C3",
      sub:"$3 each", desc:"Sold individually in the signature flavor-matched style. One flavor per pop."},
-    {kind:"single", id:"sicle", title:"Cakesicles", price:4, classicOnly:true, img:"photos/cakesicle.jpg", color:"#8FC7F2",
+    {kind:"single", id:"sicle", title:"Cakesicles", price:4, classicOnly:true, form:"cakesicle", img:"photos/cakesicle.jpg", color:"#8FC7F2",
      sub:"$4 each", desc:"A popsicle-shaped cake pop on a stick, dipped and decorated. One flavor each."}
   ];
   var OFFERINGS = BASE_OFFERINGS.slice();
@@ -751,8 +761,9 @@
   function qtyOptions(n){ var s=""; for(var i=1;i<=n;i++){ s+='<option>'+i+'</option>'; } return s; }
   function chipHtml(list){ return list.map(function(f){ return '<button type="button" class="fchip" data-flav="'+esc(f)+'">'+esc(f)+(isPremium(f)?' <em>premium</em>':'')+'</button>'; }).join(""); }
   function tileBodyHtml(o){
+    var form=o.form||"ball";
     if(o.kind==="dozen"){
-      var list=o.classicOnly?availClassics():allAvail();
+      var list=flavorsForForm(form, !o.classicOnly);
       return '<div class="t-row"><label>How many dozen?</label><select class="dz-qty">'+qtyOptions(10)+'</select></div>'+
         '<div class="fplabel">Pick up to <b class="fcap">4</b> flavors — <span class="fsel">0</span> chosen</div>'+
         '<div class="fchips">'+chipHtml(list)+'</div>'+
@@ -762,7 +773,7 @@
         '<p class="t-note">More than 10 dozen? <a href="#custom">Check availability</a></p>';
     }
     if(o.kind==="gift"){
-      var g0=o.opts[0], list2=allAvail();
+      var g0=o.opts[0], list2=flavorsForForm(form, true);
       var btns=o.opts.map(function(op,i){ return '<button type="button" class="gtype'+(i===0?' sel':'')+'" data-opt="'+op.id+'" data-balls="'+op.balls+'" data-base="'+op.price+'" data-max="'+op.maxFlavors+'">'+esc(op.label)+'<span>'+fmt(op.price)+'</span></button>'; }).join("");
       return '<div class="gtypes">'+btns+'</div>'+
         '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(12)+'</select></div>'+
@@ -772,7 +783,7 @@
         '<div class="priced"><span class="price">'+fmt(g0.price)+'</span></div>'+
         '<button class="add">Add to order</button>';
     }
-    var list3=o.classicOnly?availClassics():allAvail();
+    var list3=flavorsForForm(form, !o.classicOnly);
     var opts=list3.map(function(f){ return '<option value="'+esc(f)+'">'+esc(f)+(isPremium(f)?' (premium)':'')+'</option>'; }).join("");
     return '<div class="t-row"><label>Flavor</label><select class="flavsel">'+opts+'</select></div>'+
       '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(24)+'</select></div>'+
@@ -858,15 +869,21 @@
 
   // render flavor chips
   var cc=$("classicChips"), pc=$("premiumChips");
+  function formNote(f){
+    var fs=FLAVOR_FORMS[f];
+    if(!fs || fs.indexOf("ball")>=0) return "";  // sold as cake balls: no note needed
+    var names={pop:"cake pops", cakesicle:"cakesicles"};
+    return ' <em class="fonly">('+fs.map(function(x){return names[x]||x;}).join(" & ")+" only)</em>";
+  }
   function buildFlavorChips(){
     cc.innerHTML=""; pc.innerHTML="";
     CLASSIC.forEach(function(f){
       var on=CLASSIC_THIS_WEEK.indexOf(f)>=0;
-      cc.innerHTML += '<span class="chip '+(on?'on':'off')+'"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+(on?' ✓':'')+'</span>';
+      cc.innerHTML += '<span class="chip '+(on?'on':'off')+'"><span class="cidot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+fColor(f)+';margin-right:6px;vertical-align:middle"></span>'+esc(f)+formNote(f)+(on?' ✓':'')+'</span>';
     });
     PREMIUM.forEach(function(f){
       var on=PREMIUM_THIS_WEEK.indexOf(f)>=0;
-      pc.innerHTML += '<span class="chip '+(on?'on':'off')+'">'+esc(f)+(on?' ✓':'')+'</span>';
+      pc.innerHTML += '<span class="chip '+(on?'on':'off')+'">'+esc(f)+formNote(f)+(on?' ✓':'')+'</span>';
     });
   }
   buildFlavorChips();
@@ -1044,12 +1061,17 @@
       $("shopPickBtn").textContent="Choose a pickup day…";
     }
   }
+  function formOfId(id){
+    if(id==="pops") return "pop";
+    if(id==="sicle") return "cakesicle";
+    return "ball";  // dozen, gift boxes, dozen-mode specials
+  }
   function revalidateCart(){
     // when the date changes, some chosen flavors may no longer be offered — drop those lines
-    var avail=allAvail(), removed=[];
+    var removed=[];
     Object.keys(cart).forEach(function(k){
-      var fl=cart[k].flavors||[];
-      if(fl.some(function(f){ return avail.indexOf(f)<0; })){ removed.push(cartName(cart[k])); delete cart[k]; }
+      var line=cart[k], fl=line.flavors||[], avail=flavorsForForm(formOfId(line.id), true);
+      if(fl.some(function(f){ return avail.indexOf(f)<0; })){ removed.push(cartName(line)); delete cart[k]; }
     });
     return removed;
   }
@@ -1269,13 +1291,14 @@
     if(!$("pkcal").hidden) buildPickCal();
     if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; render(); }
     if(d.flavors && d.flavors.length){
-      var classic=[],classicWk=[],premium=[],week=[];
+      var classic=[],classicWk=[],premium=[],week=[],forms={};
       d.flavors.forEach(function(f){
         var name=(f.name||"").trim(); if(!name) return;
+        if(f.forms && f.forms.length) forms[name]=f.forms;
         if((f.type||"").toLowerCase().indexOf("premium")>=0){ premium.push(name); if(f.available) week.push(name); }
         else { classic.push(name); if(f.available) classicWk.push(name); }
       });
-      if(classic.length||premium.length){ CLASSIC=classic; CLASSIC_THIS_WEEK=classicWk; PREMIUM=premium; PREMIUM_THIS_WEEK=week; }
+      if(classic.length||premium.length){ CLASSIC=classic; CLASSIC_THIS_WEEK=classicWk; PREMIUM=premium; PREMIUM_THIS_WEEK=week; FLAVOR_FORMS=forms; }
     }
     if(d.specials && d.specials.length){
       var specPhotos={};
@@ -1293,7 +1316,7 @@
       d.specials.filter(function(s){ return s.buyable && s.dozen_mode; }).forEach(function(s){
         var ph=specPhotos[s.id], img=(ph&&ph.length)?ph[0].img:null, per=+s.price_per_dozen||0;
         var id="sp_"+s.id+"_dozen", title=(s.headline||"Special").trim();
-        SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per,
+        SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per, form:"ball",
           classicOnly:(s.flavor_mode!=="all"), sub:"$"+per+"/dozen · 1 to "+(s.max_dozen||10)+" dozen",
           desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:+s.lead_days||0});
         DOZEN_SPECIALS[id]={perDozen:per, title:title, leadDays:+s.lead_days||0};
