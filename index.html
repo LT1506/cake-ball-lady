@@ -144,6 +144,20 @@
   .item .add:hover{background:var(--pink-deep);}
   .shop-foot{text-align:center;margin-top:26px;color:var(--cocoa-soft);font-weight:700;font-size:.95rem;}
   .shop-foot b{color:var(--pink-deep);}
+  /* Step 1: choose pickup day (gates the shop) */
+  .date-step{display:flex;gap:14px;align-items:flex-start;max-width:640px;margin:0 auto 16px;background:#fff;border:2px solid #F5E6EA;border-radius:var(--radius);padding:16px 18px;}
+  .date-step.done{border-color:var(--pink);background:linear-gradient(135deg,#FFF6F9,#FFFDFB);}
+  .ds-num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--pink);color:#fff;font-family:'Baloo 2';font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+  .date-step.done .ds-num{background:#7DC98A;}
+  .ds-body{flex:1;min-width:0;}
+  .ds-body h3{font-family:'Baloo 2';font-weight:800;color:var(--cocoa);margin:2px 0 4px;font-size:1.1rem;}
+  .ds-hint{font-size:.82rem;color:var(--cocoa-soft);font-weight:600;margin:0 0 10px;}
+  .menu-note{margin-top:10px;padding:9px 12px;border-radius:10px;font-weight:700;font-size:.85rem;}
+  .menu-note.full{background:#EAF7EC;color:#2E7D46;border:1px solid #BFE6C8;}
+  .menu-note.week{background:#FFF4E0;color:#9A6A16;border:1px solid #F3DCA6;}
+  .menu-note.warn{background:#FDECEC;color:#B3273F;border:1px solid #F3C0C0;}
+  .shop-lockmsg{text-align:center;max-width:640px;margin:0 auto 14px;color:var(--cocoa-soft);font-weight:700;font-size:.92rem;}
+  .shop-grid.locked{opacity:.4;pointer-events:none;filter:grayscale(.35);}
 
   /* Flavors */
   #flavors{background:var(--blush);}
@@ -388,9 +402,20 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Order online</h2>
-      <p>Pick your flavor, add to your order, and choose a pickup day at checkout. Signature style means each cake ball is decorated to look like its flavor.</p>
+      <p>Start by choosing your pickup day, then pick your flavors and add to your order. Signature style means each cake ball is decorated to look like its flavor.</p>
     </div>
-    <div class="shop-grid" id="shopGrid"></div>
+    <div class="date-step" id="dateStep">
+      <div class="ds-num">1</div>
+      <div class="ds-body">
+        <h3>Choose your pickup day</h3>
+        <p class="ds-hint">Your pickup day sets which flavors you can order. Ordering <b>2+ weeks ahead</b> unlocks the full flavor menu. Pickups Tue–Sat; orders close 2 days before at 5pm.</p>
+        <button type="button" id="shopPickBtn" class="pickbtn">Choose a pickup day…</button>
+        <div class="pkcal" id="shopCal" hidden></div>
+        <div class="menu-note" id="menuNote" hidden></div>
+      </div>
+    </div>
+    <div class="shop-lockmsg" id="shopLockMsg">👆 Choose your pickup day above to see flavors and start your order.</div>
+    <div class="shop-grid locked" id="shopGrid"></div>
     <p class="shop-foot">Want custom colors, a theme, or custom-decoration gift boxes? <b>Custom orders start at $26/dozen</b> — <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a quote below</a>.</p>
     <p class="shop-foot" style="margin-top:8px;font-size:.88rem;">Gift box orders have a <b>$20 minimum</b> (cake balls &amp; pops count toward it).</p>
   </div>
@@ -597,8 +622,16 @@
   var CLASSIC_THIS_WEEK = CLASSIC.slice();
   function fColor(f){return FLAVOR_COLOR[f]||"#F2568C";}
   function isPremium(f){ return PREMIUM.indexOf(f) >= 0; }
-  function availClassics(){ return CLASSIC_THIS_WEEK.length ? CLASSIC_THIS_WEEK : CLASSIC; }
-  function allAvail(){ return availClassics().concat(PREMIUM_THIS_WEEK); }
+  var FULL_MENU_DAYS = 14;  // pickup this far out unlocks the full flavor list
+  function daysUntilPickup(){
+    if(!selectedPickup) return null;
+    var t=new Date(); t.setHours(0,0,0,0);
+    return Math.round((selectedPickup - t)/86400000);
+  }
+  function fullMenu(){ var d=daysUntilPickup(); return d!==null && d>=FULL_MENU_DAYS; }
+  function availClassics(){ return fullMenu() ? CLASSIC.slice() : (CLASSIC_THIS_WEEK.length ? CLASSIC_THIS_WEEK : CLASSIC); }
+  function availPremium(){ return fullMenu() ? PREMIUM.slice() : PREMIUM_THIS_WEEK; }
+  function allAvail(){ return availClassics().concat(availPremium()); }
   // ---- pricing, mirrors app/catalog.py exactly ----
   function premCount(fl){ var n=0; for(var i=0;i<fl.length;i++){ if(isPremium(fl[i])) n++; } return n; }
   function ballPrice(base, balls, fl){ return fl.length ? base + Math.round(balls*premCount(fl)/fl.length)*0.5 : base; }
@@ -967,27 +1000,81 @@
     html+='</div></div>';
     return html;
   }
-  function buildPickCal(){
+  function calMonthsHtml(){
     var lead=cartMaxLead(), now=new Date(), y=now.getFullYear(), m=now.getMonth();
     var y2=(m===11)?y+1:y, m2=(m+1)%12;
-    $("pkcal").innerHTML=pickCalMonthHtml(y,m,lead)+pickCalMonthHtml(y2,m2,lead);
+    return pickCalMonthHtml(y,m,lead)+pickCalMonthHtml(y2,m2,lead);
+  }
+  function buildPickCal(){ $("pkcal").innerHTML=calMonthsHtml(); }
+  function buildShopCal(){ $("shopCal").innerHTML=calMonthsHtml(); }
+  // choose a pickup day from either the top-of-shop step or the cart: single source of truth
+  function setPickup(dObj, label){
+    selectedPickup=dObj;
+    $("pickupDate").value=label;
+    $("pickupBtn").textContent=label;
+    $("shopPickBtn").textContent=label;
+    $("pkcal").hidden=true; $("shopCal").hidden=true;
+    var removed=revalidateCart();   // drop cart items whose flavors aren't offered for this date
+    updateShopLock(removed);
+    renderShop();                   // flavor pickers now reflect the chosen date
+    render();
+  }
+  function updateShopLock(removed){
+    var note=$("menuNote");
+    if(selectedPickup){
+      $("shopGrid").classList.remove("locked");
+      $("shopLockMsg").hidden=true;
+      $("dateStep").classList.add("done");
+      note.hidden=false;
+      if(removed && removed.length){
+        note.className="menu-note warn";
+        note.innerHTML="Heads up — these were removed because their flavors aren't offered for that day: <b>"+removed.map(esc).join(", ")+"</b>. Please re-add them.";
+      } else if(fullMenu()){
+        note.className="menu-note full";
+        note.innerHTML="🎉 You're ordering 2+ weeks ahead, so the <b>full flavor menu</b> is unlocked.";
+      } else {
+        note.className="menu-note week";
+        note.innerHTML="Showing <b>this week's flavors</b>. Order 2+ weeks ahead to unlock the full flavor menu.";
+      }
+    } else {
+      $("shopGrid").classList.add("locked");
+      $("shopLockMsg").hidden=false;
+      $("dateStep").classList.remove("done");
+      note.hidden=true;
+      $("shopPickBtn").textContent="Choose a pickup day…";
+    }
+  }
+  function revalidateCart(){
+    // when the date changes, some chosen flavors may no longer be offered — drop those lines
+    var avail=allAvail(), removed=[];
+    Object.keys(cart).forEach(function(k){
+      var fl=cart[k].flavors||[];
+      if(fl.some(function(f){ return avail.indexOf(f)<0; })){ removed.push(cartName(cart[k])); delete cart[k]; }
+    });
+    return removed;
   }
   $("pickupBtn").addEventListener("click",function(){
     var cal=$("pkcal");
     if(cal.hidden){ buildPickCal(); cal.hidden=false; } else { cal.hidden=true; }
   });
-  $("pkcal").addEventListener("click",function(e){
-    var b=e.target.closest("button.pcm-d"); if(!b) return;
-    selectedPickup=isoToDate(b.getAttribute("data-iso"));
-    var label=b.getAttribute("data-label");
-    $("pickupDate").value=label; $("pickupBtn").textContent=label; $("pkcal").hidden=true; render();
+  $("shopPickBtn").addEventListener("click",function(){
+    var cal=$("shopCal");
+    if(cal.hidden){ buildShopCal(); cal.hidden=false; } else { cal.hidden=true; }
   });
+  function onCalClick(e){
+    var b=e.target.closest("button.pcm-d"); if(!b) return;
+    setPickup(isoToDate(b.getAttribute("data-iso")), b.getAttribute("data-label"));
+  }
+  $("pkcal").addEventListener("click",onCalClick);
+  $("shopCal").addEventListener("click",onCalClick);
   function syncPickupLead(){
     // drop a chosen day if the cart now makes it invalid (extra lead, or it got blocked)
     if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){
       selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…";
+      updateShopLock();
     }
     if(!$("pkcal").hidden) buildPickCal();
+    if(!$("shopCal").hidden) buildShopCal();
   }
   function fmtDate(d){
     var wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
@@ -1213,6 +1300,7 @@
       });
     }
     rebuildShop();
+    updateShopLock();
     buildFlavorChips();
     if(d.gallery && d.gallery.length){
       GALLERY=d.gallery.filter(function(p){ return !p.special_id; }).map(function(p){ return {img:p.url, cap:(p.caption||"").trim(), cat:(p.category||"").trim()}; });
@@ -1227,6 +1315,7 @@
   }
 
   render();
+  updateShopLock();
   setupReveal(); setupSprinkles(); setupNav(); setupFormMin(); fetchContent();
 
   // thank-you after returning from Stripe checkout
