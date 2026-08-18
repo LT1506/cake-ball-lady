@@ -426,7 +426,7 @@
       <div class="ds-num">1</div>
       <div class="ds-body">
         <h3>Choose your pickup day</h3>
-        <p class="ds-hint">Your pickup day sets which flavors you can order. Ordering <b>2+ weeks ahead</b> unlocks the full flavor menu. Pickups Tue–Sat; orders close 2 days before at 5pm.</p>
+        <p class="ds-hint">Your pickup day sets which flavors you can order. Ordering <b>2+ weeks ahead</b> unlocks the full <b>Signature Decoration</b> flavor menu. Pickups Tue–Sat; orders close 2 days before at 5pm.</p>
         <button type="button" id="shopPickBtn" class="pickbtn">Choose a pickup day…</button>
         <div class="pkcal" id="shopCal" hidden></div>
         <div class="menu-note" id="menuNote" hidden></div>
@@ -529,6 +529,7 @@
       <div class="fbrand">The Cake Ball Lady</div>
       <p>Handmade cake balls &amp; cake pops in the Evansville, Indiana area.</p>
       <p><a href="https://www.facebook.com/The-Cake-Ball-Lady-1654923191205698" rel="noopener">Find us on Facebook</a></p>
+      <p><a href="mailto:cakeballsbyjoni@gmail.com">cakeballsbyjoni@gmail.com</a></p>
     </div>
     <div>
       <h4>Pickup</h4>
@@ -572,7 +573,6 @@
       <label>Payment</label>
       <div class="paysel" id="paySel">
         <button type="button" class="payopt sel" data-pay="card">Card now</button>
-        <button type="button" class="payopt" data-pay="cash">Cash at pickup</button>
         <button type="button" class="payopt" data-pay="venmo">Venmo</button>
       </div>
     </div>
@@ -1042,8 +1042,10 @@
   }
   function calMonthsHtml(){
     var lead=cartMaxLead(), now=new Date(), y=now.getFullYear(), m=now.getMonth();
-    var y2=(m===11)?y+1:y, m2=(m+1)%12;
-    return pickCalMonthHtml(y,m,lead)+pickCalMonthHtml(y2,m2,lead);
+    var html="";
+    for(var i=m;i<=11;i++){ html+=pickCalMonthHtml(y,i,lead); }   // rest of this year
+    if(m===11){ html+=pickCalMonthHtml(y+1,0,lead); }             // in Dec, also show next Jan
+    return html;
   }
   function buildPickCal(){ $("pkcal").innerHTML=calMonthsHtml(); }
   function buildShopCal(){ $("shopCal").innerHTML=calMonthsHtml(); }
@@ -1071,10 +1073,10 @@
         note.innerHTML="Heads up — these were removed because their flavors aren't offered for that day: <b>"+removed.map(esc).join(", ")+"</b>. Please re-add them.";
       } else if(fullMenu()){
         note.className="menu-note full";
-        note.innerHTML="🎉 You're ordering 2+ weeks ahead, so the <b>full flavor menu</b> is unlocked.";
+        note.innerHTML="🎉 You're ordering 2+ weeks ahead, so the full <b>Signature Decoration</b> flavor menu is unlocked.";
       } else {
         note.className="menu-note week";
-        note.innerHTML="Showing <b>this week's flavors</b>. Order 2+ weeks ahead to unlock the full flavor menu.";
+        note.innerHTML="Showing <b>this week's flavors</b>. Order 2+ weeks ahead to unlock the full <b>Signature Decoration</b> flavor menu.";
       }
     } else {
       $("shopGrid").classList.add("locked");
