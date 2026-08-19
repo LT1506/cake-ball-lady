@@ -1202,6 +1202,11 @@
     var note=$("giftNote");
     if(hasGift && !giftMinOk){ note.hidden=false; note.textContent="Gift boxes need a "+fmt(GIFT_MIN)+" minimum order — add "+fmt(GIFT_MIN-total)+" more."; }
     else { note.hidden=true; }
+    var vpromo=$("venmoPromo");
+    if(payMethod==="venmo" && VENMO_PROMO && total>=VENMO_PROMO.min){
+      vpromo.hidden=false;
+      vpromo.innerHTML="💜 <b>Using a promo code?</b> Codes are entered on the card checkout page. Paying by Venmo? Subtract "+fmt(VENMO_PROMO.off)+" from the total below when you send your payment, and put the code in your Venmo note so The Cake Ball Lady can confirm it.";
+    } else { vpromo.hidden=true; }
     var hasDate=$("pickupDate").value!=="", hasLoc=$("pickupLoc").value!=="";
     var needsContact = payMethod!=="card";
     var hasContact = !needsContact || ($("ordName").value.trim() && $("ordContact").value.trim());
@@ -1215,6 +1220,9 @@
       : (!hasContact ? "Add your name & contact" : payLabel))));
   }
   // payment method selector
+  // Venmo promo reminder: shown in the Venmo flow ONLY when the cart total meets the
+  // coupon minimum. Update off/min to match the live coupon, or set to null to hide it.
+  var VENMO_PROMO = {off:5, min:25};
   var payMethod="card", VENMO_HANDLE="";
   $("paySel").addEventListener("click",function(e){
     var b=e.target.closest(".payopt"); if(!b) return;
@@ -1227,9 +1235,6 @@
     if(payMethod==="venmo") ph.textContent = VENMO_HANDLE ? ("You'll send your total to "+VENMO_HANDLE+" on Venmo after ordering.") : "You'll get Venmo details to send your payment after ordering.";
     else if(payMethod==="cash") ph.textContent = "Pay cash when you pick up your order.";
     else ph.textContent="";
-    var vp=$("venmoPromo");
-    vp.hidden = (payMethod!=="venmo");
-    if(payMethod==="venmo") vp.innerHTML = "💜 <b>Using a promo code?</b> Promo codes are entered on the card checkout page. Paying by Venmo instead? Subtract your discount from the total below when you send your payment (only if your order meets the code's minimum — for example, $5 off orders of $25 or more), and put the code in your Venmo note so The Cake Ball Lady can confirm it.";
     $("payNoteCard").hidden = (payMethod!=="card");
     render();
   });
