@@ -284,6 +284,7 @@
   .checkout:hover{background:var(--pink-deep);}
   .checkout:disabled{background:#D9C4C9;cursor:not-allowed;}
   .pay-note{text-align:center;font-size:.78rem;color:var(--cocoa-soft);font-weight:600;margin-top:9px;}
+  .venmo-promo{margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--blush);color:var(--pink-deep);font-weight:700;font-size:.82rem;line-height:1.45;}
   .fee-note{text-align:center;font-size:.8rem;color:var(--cocoa-soft);font-weight:700;margin:-2px 0 12px;}
   .paysel{display:flex;gap:6px;}
   .payopt{flex:1;background:#fff;border:2px solid var(--line);border-radius:10px;padding:9px 4px;font-family:inherit;font-weight:800;font-size:.82rem;color:var(--cocoa);cursor:pointer;}
@@ -575,6 +576,7 @@
         <button type="button" class="payopt sel" data-pay="card">Card now</button>
         <button type="button" class="payopt" data-pay="venmo">Venmo</button>
       </div>
+      <p class="venmo-promo" id="venmoPromo" hidden></p>
     </div>
     <div class="pk" id="contactFields" hidden>
       <label for="ordName">Your name</label>
@@ -587,7 +589,7 @@
     <p class="fee-note" id="feeNote">+3% card fee added at checkout</p>
     <p class="gift-warn" id="giftNote" hidden></p>
     <button class="checkout" id="checkoutBtn" disabled>Checkout &amp; pay by card</button>
-    <p class="pay-note">Have a promo code? Enter it on the payment page. Secure card payment powered by Stripe, straight to The Cake Ball Lady.</p>
+    <p class="pay-note" id="payNoteCard">Have a promo code? Enter it on the payment page. Secure card payment powered by Stripe, straight to The Cake Ball Lady.</p>
   </div>
 </aside>
 
@@ -1225,6 +1227,10 @@
     if(payMethod==="venmo") ph.textContent = VENMO_HANDLE ? ("You'll send your total to "+VENMO_HANDLE+" on Venmo after ordering.") : "You'll get Venmo details to send your payment after ordering.";
     else if(payMethod==="cash") ph.textContent = "Pay cash when you pick up your order.";
     else ph.textContent="";
+    var vp=$("venmoPromo");
+    vp.hidden = (payMethod!=="venmo");
+    if(payMethod==="venmo") vp.innerHTML = "💜 <b>Using a promo code?</b> Promo codes are entered on the card checkout page. Paying by Venmo instead? Subtract your discount from the total below when you send your payment (only if your order meets the code's minimum — for example, $5 off orders of $25 or more), and put the code in your Venmo note so The Cake Ball Lady can confirm it.";
+    $("payNoteCard").hidden = (payMethod!=="card");
     render();
   });
   ["ordName","ordContact"].forEach(function(id){ $(id).addEventListener("input",render); });
