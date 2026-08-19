@@ -489,7 +489,7 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Custom orders</h2>
-      <p>Tell us about your event and we'll send a quote. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes are ordered here too.</p>
+      <p>Tell us about your event and we'll send a quote <b>within 48 hours</b>. Once it's priced, you'll get a link to pay by card. Custom-decoration gift boxes are ordered here too.</p>
     </div>
     <div class="custom-card">
       <div class="custom-facts">
@@ -510,7 +510,7 @@
         </div>
         <div class="fld"><label for="cf-details">Tell us what you're dreaming up</label><textarea id="cf-details" name="details" placeholder="How many, flavors, colors or theme, any details..."></textarea></div>
         <button class="btn btn-primary" type="submit" style="width:100%;">Request my quote</button>
-        <p class="custom-note">This opens an email to The Cake Ball Lady with your request. She'll reply with a quote and a link to pay by card.</p>
+        <p class="custom-note">Your request goes straight to The Cake Ball Lady. She'll send a quote within 48 hours, along with a link to pay by card.</p>
       </form>
     </div>
   </div>
@@ -770,7 +770,7 @@
     {q:"Do you offer allergen-free cake balls or cake pops?", a:"At this time, I do not offer allergen-free products. All of my products are made in a kitchen where common allergens are present, so I cannot guarantee that any product is free from cross-contamination. For this reason, I am unable to accommodate orders requiring allergen-free preparation."},
     {q:"How long do cake pops and cake balls stay fresh?", a:"At room temperature: 3 to 5 days. Refrigerated: 7 to 10 days. Frozen: up to 3 months."},
     {q:"What is the best way to freeze and thaw cake pops or cake balls?", a:"To keep the best quality and texture, place your cake pops or cake balls in an airtight container before freezing. When you're ready to enjoy them, move the container to the refrigerator and let them thaw overnight. Thawing them slowly in the fridge minimizes condensation and sweating, so they look and taste their best for your event."},
-    {q:"How do I pay?", a:"Set-price items are paid by card right here on the site, powered by Stripe. For custom orders, I send you a quote first, then a link to pay by card once it's priced."}
+    {q:"How do I pay?", a:"Set-price items are paid by card right here on the site, powered by Stripe. For custom orders, I send you a quote within 48 hours, then a link to pay by card once it's priced."}
   ];
 
   // ---------- Cart (keyed by item + flavor) ----------
@@ -1273,7 +1273,7 @@
     }
     fetch(API_BASE+"/api/custom-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
       .then(function(res){ if(!res.ok) throw new Error("bad"); return res.json(); })
-      .then(function(){ showModal("&#128233;","Request sent!","Thanks! Your custom request went straight to The Cake Ball Lady. She'll reply with a quote and a link to pay by card."); form.reset(); })
+      .then(function(){ showModal("&#128233;","Request sent!","Thanks! Your custom request went straight to The Cake Ball Lady. She'll send a quote within 48 hours, along with a link to pay by card."); form.reset(); })
       .catch(function(){ fallbackEmail(); showModal("&#128233;","Opening your email…","We couldn't send it automatically, so we put your request into an email to The Cake Ball Lady — just hit send. If your email app didn't open, send your details to cakeballsbyjoni@gmail.com."); form.reset(); });
   });
 
