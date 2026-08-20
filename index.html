@@ -230,6 +230,12 @@
   .fld input,.fld textarea{width:100%;padding:12px 14px;border:2px solid #F0E4E0;border-radius:12px;font-family:'Nunito';font-size:.96rem;background:#FFFDFB;}
   .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--pink);}
   .fld textarea{resize:vertical;min-height:90px;}
+  .cf-hint{font-weight:600;color:var(--cocoa-soft);font-size:.82rem;}
+  .cf-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media(max-width:520px){.cf-checks{grid-template-columns:1fr;}}
+  .cf-check{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.92rem;color:var(--cocoa);cursor:pointer;padding:11px 14px;border:2px solid #F0E4E0;border-radius:12px;background:#FFFDFB;}
+  .cf-check input{width:auto;margin:0;flex:none;accent-color:var(--pink);}
+  .cf-decide{margin-top:9px;}
   .custom-note{font-size:.85rem;color:var(--cocoa-soft);font-weight:600;margin-top:6px;text-align:center;}
 
   /* FAQ */
@@ -503,13 +509,28 @@
       <form id="customForm">
         <div class="form-row">
           <div class="fld"><label for="cf-name">Your name</label><input id="cf-name" name="name" required></div>
-          <div class="fld"><label for="cf-contact">Phone or email</label><input id="cf-contact" name="contact" required></div>
+          <div class="fld"><label for="cf-phone">Phone number</label><input id="cf-phone" name="phone" type="tel" required></div>
         </div>
         <div class="form-row">
-          <div class="fld"><label for="cf-occasion">Occasion</label><input id="cf-occasion" name="occasion" placeholder="Birthday, wedding, tailgate..."></div>
+          <div class="fld"><label for="cf-email">Email address</label><input id="cf-email" name="email" type="email" required></div>
           <div class="fld"><label for="cf-date">Date needed</label><input id="cf-date" name="date" type="date"></div>
         </div>
-        <div class="fld"><label for="cf-details">Tell us what you're dreaming up</label><textarea id="cf-details" name="details" placeholder="How many, flavors, colors or theme, any details..."></textarea></div>
+        <div class="fld"><label for="cf-occasion">Occasion</label><input id="cf-occasion" name="occasion" placeholder="Birthday, wedding, tailgate..."></div>
+        <div class="fld">
+          <label>What are you ordering? <span class="cf-hint">(pick one or more)</span></label>
+          <div class="cf-checks">
+            <label class="cf-check"><input type="checkbox" name="items" value="Cake Balls"> Cake Balls</label>
+            <label class="cf-check"><input type="checkbox" name="items" value="Cake Pops"> Cake Pops</label>
+            <label class="cf-check"><input type="checkbox" name="items" value="Cakesicles"> Cakesicles</label>
+            <label class="cf-check"><input type="checkbox" name="items" value="Gift Boxes"> Gift Boxes</label>
+          </div>
+        </div>
+        <div class="fld">
+          <label for="cf-flavors">Flavors <span class="cf-hint">(2 per dozen)</span></label>
+          <input id="cf-flavors" name="flavors" placeholder="e.g. Chocolate, Vanilla">
+          <label class="cf-check cf-decide"><input type="checkbox" id="cf-undecided"> Still deciding — I'll pick my flavors later</label>
+        </div>
+        <div class="fld"><label for="cf-details">Tell us what you're dreaming up</label><textarea id="cf-details" name="details" placeholder="Colors, theme, decoration details, any add-ons..."></textarea></div>
         <button class="btn btn-primary" type="submit" style="width:100%;">Request my quote</button>
         <p class="custom-note">Your request goes straight to The Cake Ball Lady. She'll send a quote within 48 hours, along with a link to pay by card.</p>
       </form>
@@ -1296,14 +1317,24 @@
   });
 
   // custom form -> logs to her Orders board; falls back to email if it can't be sent
+  var cfUndecided=$("cf-undecided");
+  if(cfUndecided){ cfUndecided.addEventListener("change",function(){
+    var f=$("cf-flavors"); f.disabled=cfUndecided.checked; if(cfUndecided.checked) f.value=""; });
+  }
   $("customForm").addEventListener("submit",function(e){
     e.preventDefault();
     var form=e.target;
-    var payload={ name:$("cf-name").value.trim(), contact:$("cf-contact").value.trim(),
-      occasion:$("cf-occasion").value.trim(), date:$("cf-date").value.trim(), details:$("cf-details").value.trim() };
+    var items=[].slice.call(document.querySelectorAll('#customForm input[name="items"]:checked')).map(function(c){return c.value;});
+    if(!items.length){ showModal("&#127856;","One more thing","Please check which item you'd like a custom order for (Cake Balls, Cake Pops, Cakesicles, or Gift Boxes)."); return; }
+    var undecided=cfUndecided.checked;
+    var payload={ name:$("cf-name").value.trim(), phone:$("cf-phone").value.trim(), email:$("cf-email").value.trim(),
+      occasion:$("cf-occasion").value.trim(), date:$("cf-date").value.trim(), items:items,
+      flavors: undecided?"":$("cf-flavors").value.trim(), still_deciding:undecided, details:$("cf-details").value.trim() };
     function fallbackEmail(){
       var subject="Custom cake ball request"+(payload.name?(" - "+payload.name):"");
-      var body="Name: "+payload.name+"\nPhone or email: "+payload.contact+"\nOccasion: "+payload.occasion+"\nDate needed: "+payload.date+"\n\nDetails:\n"+payload.details+"\n";
+      var body="Name: "+payload.name+"\nPhone: "+payload.phone+"\nEmail: "+payload.email+
+        "\nItems: "+items.join(", ")+"\nFlavors: "+(undecided?"Still deciding":payload.flavors)+
+        "\nOccasion: "+payload.occasion+"\nDate needed: "+payload.date+"\n\nDecoration:\n"+payload.details+"\n";
       window.location.href="mailto:cakeballsbyjoni@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
     }
     fetch(API_BASE+"/api/custom-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
