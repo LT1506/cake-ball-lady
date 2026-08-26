@@ -602,8 +602,11 @@
     <div class="pk" id="contactFields" hidden>
       <label for="ordName">Your name</label>
       <input class="ci-input" id="ordName" placeholder="Name">
-      <label for="ordContact" style="margin-top:8px;">Phone or email</label>
-      <input class="ci-input" id="ordContact" placeholder="Phone or email">
+      <label for="ordEmail" style="margin-top:8px;">Email address</label>
+      <input class="ci-input" id="ordEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com">
+      <div class="hint">We'll email your receipt here.</div>
+      <label for="ordPhone" style="margin-top:8px;">Phone <span style="font-weight:400;opacity:.7">(optional)</span></label>
+      <input class="ci-input" id="ordPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Phone number">
       <div class="hint" id="payHint"></div>
     </div>
     <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
@@ -1198,6 +1201,8 @@
     if(SPECIAL_ITEMS[id]) return SPECIAL_ITEMS[id].name;
     return id; }
 
+  // Simple, lenient email check: something@something.tld with no spaces.
+  function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||"").trim()); }
   function render(){
     syncPickupLead();
     var items=$("cartItems"); items.innerHTML="";
@@ -1232,7 +1237,7 @@
     } else { vpromo.hidden=true; }
     var hasDate=$("pickupDate").value!=="", hasLoc=$("pickupLoc").value!=="";
     var needsContact = payMethod!=="card";
-    var hasContact = !needsContact || ($("ordName").value.trim() && $("ordContact").value.trim());
+    var hasContact = !needsContact || ($("ordName").value.trim() && isEmail($("ordEmail").value.trim()));
     var btn=$("checkoutBtn");
     btn.disabled = count===0 || !giftMinOk || !hasDate || !hasLoc || !hasContact;
     var payLabel = payMethod==="card" ? "Checkout & pay by card" : (payMethod==="venmo" ? "Place order (pay by Venmo)" : "Place order (cash at pickup)");
@@ -1261,7 +1266,7 @@
     $("payNoteCard").hidden = (payMethod!=="card");
     render();
   });
-  ["ordName","ordContact"].forEach(function(id){ $(id).addEventListener("input",render); });
+  ["ordName","ordEmail","ordPhone"].forEach(function(id){ $(id).addEventListener("input",render); });
   $("cartItems").addEventListener("click",function(e){
     var b=e.target.closest("button[data-k]"); if(!b) return;
     chg(b.dataset.k, parseInt(b.dataset.d,10));
@@ -1294,11 +1299,11 @@
       return;
     }
     // cash / venmo: place the order (unpaid), no card fee
-    var name=$("ordName").value.trim(), contact=$("ordContact").value.trim();
+    var name=$("ordName").value.trim(), email=$("ordEmail").value.trim(), phone=$("ordPhone").value.trim();
     var totalTxt=$("cartTotal").textContent;
     btn.disabled=true; btn.textContent="Placing your order…";
     fetch(PLACE_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({items:items,pickup_date:date,pickup_iso:pickIso,pickup_location:loc,name:name,contact:contact,method:payMethod})})
+      body:JSON.stringify({items:items,pickup_date:date,pickup_iso:pickIso,pickup_location:loc,name:name,email:email,phone:phone,method:payMethod})})
       .then(function(res){ return res.json().then(function(j){ return {ok:res.ok,j:j}; }); })
       .then(function(r){
         if(r.ok){
