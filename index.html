@@ -670,6 +670,8 @@
   var CLASSIC_THIS_WEEK = CLASSIC.slice();
   function fColor(f){return FLAVOR_COLOR[f]||"#F2568C";}
   function isPremium(f){ return PREMIUM.indexOf(f) >= 0; }
+  // "Stuffed" flavors (name contains "stuffed") take a flat higher price on pops.
+  function isStuffed(f){ return /stuffed/i.test(f||""); }
   var FULL_MENU_DAYS = 14;  // pickup this far out unlocks the full flavor list
   function daysUntilPickup(){
     if(!selectedPickup) return null;
@@ -693,7 +695,10 @@
   function premCount(fl){ var n=0; for(var i=0;i<fl.length;i++){ if(isPremium(fl[i])) n++; } return n; }
   function ballPrice(base, balls, fl){ return fl.length ? base + Math.round(balls*premCount(fl)/fl.length)*0.5 : base; }
   function dozenPrice(fl, dozens, perDozen){ var b=12*dozens, pb=fl.length?Math.round(b*premCount(fl)/fl.length):0; return perDozen*dozens + pb*0.5; }
-  function singlePrice(base, fl){ return base + (fl.length && isPremium(fl[0]) ? 0.5 : 0); }
+  function singlePrice(base, fl, stuffed){
+    if(fl.length && stuffed!=null && isStuffed(fl[0])) return stuffed;
+    return base + (fl.length && isPremium(fl[0]) ? 0.5 : 0);
+  }
   function dozenMaxFlavors(d){ return d<=1 ? 4 : Math.max(6, d); }
 
   // ---------- Shop offerings (expandable tiles) ----------
@@ -706,14 +711,14 @@
      opts:[{id:"gs2",label:"2-pack",price:5,balls:2,maxFlavors:2},
            {id:"gs4",label:"4-pack",price:10,balls:4,maxFlavors:4},
            {id:"gd12",label:"1 dozen",price:24,balls:12,maxFlavors:4}]},
-    {kind:"single", id:"pops", title:"Cake Pops", price:3, classicOnly:false, form:"pop", img:"photos/cake-pops.jpg", color:"#7DD8C3",
+    {kind:"single", id:"pops", title:"Cake Pops", price:3, stuffed:3.75, classicOnly:false, form:"pop", img:"photos/cake-pops.jpg", color:"#7DD8C3",
      sub:"$3 each", desc:"Sold individually in the signature flavor-matched style. One flavor per pop."},
     {kind:"single", id:"sicle", title:"Cakesicles", price:4, classicOnly:true, form:"cakesicle", img:"photos/cakesicle.jpg", color:"#8FC7F2",
      sub:"$4 each", desc:"A popsicle-shaped cake pop on a stick, dipped and decorated. One flavor each."}
   ];
   var OFFERINGS = BASE_OFFERINGS.slice();
   var GIFT_LOOKUP = {gs2:{base:5,balls:2,name:"Gift Box · 2-pack"}, gs4:{base:10,balls:4,name:"Gift Box · 4-pack"}, gd12:{base:24,balls:12,name:"Gift Box · 1 dozen"}};
-  var SINGLE_LOOKUP = {pops:{price:3,name:"Cake Pop"}, sicle:{price:4,name:"Cakesicle"}};
+  var SINGLE_LOOKUP = {pops:{price:3,stuffed:3.75,name:"Cake Pop"}, sicle:{price:4,name:"Cakesicle"}};
   var DOZEN_SPECIALS = {};  // "sp_<id>_dozen" -> {perDozen,title} from content
   var SPECIAL_ITEMS = {};   // "sp_<id>_<optKey>" -> {name,price,form,flavored} for fixed-price special options
   function rebuildShop(){ OFFERINGS = BASE_OFFERINGS.concat(SPECIAL_OFFERINGS); renderShop(); }
@@ -849,10 +854,10 @@
         '<button class="add">Add to order</button>';
     }
     var list3=flavorsForForm(form, !o.classicOnly);
-    var opts=list3.map(function(f){ return '<option value="'+esc(f)+'">'+esc(f)+(isPremium(f)?' (premium)':'')+'</option>'; }).join("");
+    var opts=list3.map(function(f){ var tag=(o.stuffed&&isStuffed(f))?' (stuffed)':(isPremium(f)?' (premium)':''); return '<option value="'+esc(f)+'">'+esc(f)+tag+'</option>'; }).join("");
     return '<div class="t-row"><label>Flavor</label><select class="flavsel">'+opts+'</select></div>'+
       '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(24)+'</select></div>'+
-      (o.classicOnly?'':'<div class="fnote">Premium flavors add $0.50 each.</div>')+
+      (o.classicOnly?'':'<div class="fnote">Premium flavors add $0.50 each.'+(o.stuffed?(' Stuffed flavors are '+fmt(o.stuffed)+' each.'):'')+'</div>')+
       '<div class="priced"><span class="price">'+fmt(o.price)+'</span></div>'+
       '<button class="add">Add to order</button>';
   }
@@ -882,7 +887,7 @@
     if(o.kind==="dozen"){ fl=tileFlavors(el); price=dozenPrice(fl,+el.querySelector(".dz-qty").value,o.perDozen); }
     else if(o.kind==="gift"){ fl=tileFlavors(el); var g=el.querySelector(".gtype.sel"); price=ballPrice(+g.getAttribute("data-base"),+g.getAttribute("data-balls"),fl)*(+el.querySelector(".unit-qty").value); }
     else if(o.kind==="options"){ var go=el.querySelector(".gtype.sel"); var pr=go?(+go.getAttribute("data-price")||0):0; fl=o.flavored?tileFlavors(el):[]; price=pr*(+el.querySelector(".unit-qty").value); }
-    else { var s=el.querySelector(".flavsel"); fl=s?[s.value]:[]; price=singlePrice(o.price,fl)*(+el.querySelector(".unit-qty").value); }
+    else { var s=el.querySelector(".flavsel"); fl=s?[s.value]:[]; price=singlePrice(o.price,fl,o.stuffed)*(+el.querySelector(".unit-qty").value); }
     var pe=el.querySelector(".price"); if(pe) pe.textContent=fmt(price);
     if(o.kind==="dozen"||o.kind==="gift"||(o.kind==="options"&&o.flavored)){
       var cap=tileCap(el,o), n=el.querySelectorAll(".fchip.sel").length;
@@ -1190,7 +1195,7 @@
     if(id==="dozen") return dozenPrice(fl,q,24);
     if(DOZEN_SPECIALS[id]) return dozenPrice(fl,q,DOZEN_SPECIALS[id].perDozen);
     if(GIFT_LOOKUP[id]) return ballPrice(GIFT_LOOKUP[id].base,GIFT_LOOKUP[id].balls,fl)*q;
-    if(SINGLE_LOOKUP[id]) return singlePrice(SINGLE_LOOKUP[id].price,fl)*q;
+    if(SINGLE_LOOKUP[id]) return singlePrice(SINGLE_LOOKUP[id].price,fl,SINGLE_LOOKUP[id].stuffed)*q;
     if(SPECIAL_ITEMS[id]) return SPECIAL_ITEMS[id].price*q;
     return 0; }
   function cartName(line){ var id=line.id, q=line.qty;
