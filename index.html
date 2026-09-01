@@ -143,6 +143,8 @@
   .gtype span{font-weight:700;font-size:.8rem;color:var(--pink-deep);}
   .gtype.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
   .gtype.sel span{color:#fff;}
+  .gtype-out{opacity:.6;cursor:not-allowed;background:#F5F1EF;border-color:#E6DAD5;color:#9A8A84;}
+  .gtype-out span{color:#B0708A;font-size:.72rem;font-weight:700;line-height:1.15;}
   .tile .priced{margin:6px 0 12px;}
   .tile .price{font-family:'Baloo 2';font-weight:800;font-size:1.5rem;color:var(--pink-deep);}
   .tile .add{width:100%;background:var(--pink);color:#fff;border:none;border-radius:999px;padding:12px;font-family:'Baloo 2';font-weight:800;font-size:1.02rem;cursor:pointer;}
@@ -714,7 +716,7 @@
     {kind:"gift", id:"gift", title:"Gift Boxes", img:"photos/gift-4pack.jpg", color:"#FFD666", form:"ball",
      sub:"Starting at $5", desc:"Signature cake balls in a branded gift box, ready to give.",
      opts:[{id:"gs2",label:"2-pack",price:5,balls:2,maxFlavors:2},
-           {id:"gs4",label:"4-pack",price:10,balls:4,maxFlavors:4},
+           {id:"gs4",label:"4-pack",price:10,balls:4,maxFlavors:4,out:true},
            {id:"gd12",label:"1 dozen",price:24,balls:12,maxFlavors:4}]},
     {kind:"single", id:"pops", title:"Cake Pops", price:3, stuffed:3.75, classicOnly:false, form:"pop", img:"photos/cake-pops.jpg", color:"#7DD8C3",
      sub:"$3 each", desc:"Sold individually in the signature flavor-matched style. One flavor per pop."},
@@ -835,7 +837,7 @@
     }
     if(o.kind==="gift"){
       var g0=o.opts[0], list2=flavorsForForm(form, true);
-      var btns=o.opts.map(function(op,i){ return '<button type="button" class="gtype'+(i===0?' sel':'')+'" data-opt="'+op.id+'" data-balls="'+op.balls+'" data-base="'+op.price+'" data-max="'+op.maxFlavors+'">'+esc(op.label)+'<span>'+fmt(op.price)+'</span></button>'; }).join("");
+      var btns=o.opts.map(function(op,i){ if(op.out){ return '<button type="button" class="gtype gtype-out" disabled data-opt="'+op.id+'">'+esc(op.label)+'<span>Temporarily<br>out of stock</span></button>'; } return '<button type="button" class="gtype'+(i===0?' sel':'')+'" data-opt="'+op.id+'" data-balls="'+op.balls+'" data-base="'+op.price+'" data-max="'+op.maxFlavors+'">'+esc(op.label)+'<span>'+fmt(op.price)+'</span></button>'; }).join("");
       return '<div class="gtypes">'+btns+'</div>'+
         '<div class="t-row"><label>How many?</label><select class="unit-qty">'+qtyOptions(12)+'</select></div>'+
         '<div class="fplabel">Pick up to <b class="fcap">'+g0.maxFlavors+'</b> flavors — <span class="fsel">0</span> chosen</div>'+
@@ -918,7 +920,7 @@
       if(motionOK() && chip.classList.contains("sel")){ chip.classList.remove("justsel"); void chip.offsetWidth; chip.classList.add("justsel"); }
       refreshTile(t2); return; }
     var gt=e.target.closest(".gtype");
-    if(gt){ var t3=gt.closest(".tile");
+    if(gt && !gt.classList.contains("gtype-out")){ var t3=gt.closest(".tile");
       [].slice.call(t3.querySelectorAll(".gtype")).forEach(function(b){b.classList.remove("sel");});
       gt.classList.add("sel"); enforceCap(t3); refreshTile(t3); return; }
     var add=e.target.closest(".add");
