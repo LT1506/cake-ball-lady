@@ -233,6 +233,7 @@
   .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--pink);}
   .fld textarea{resize:vertical;min-height:90px;}
   .cf-hint{font-weight:600;color:var(--cocoa-soft);font-size:.82rem;}
+  .cf-datehint{margin:6px 0 0;font-size:.82rem;line-height:1.4;font-weight:700;color:#7A6420;background:#FFF8E6;border:1px solid #EAD9A6;border-radius:10px;padding:8px 11px;}
   .cf-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   @media(max-width:520px){.cf-checks{grid-template-columns:1fr;}}
   .cf-check{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.92rem;color:var(--cocoa);cursor:pointer;padding:11px 14px;border:2px solid #F0E4E0;border-radius:12px;background:#FFFDFB;}
@@ -516,7 +517,7 @@
         </div>
         <div class="form-row">
           <div class="fld"><label for="cf-email">Email address</label><input id="cf-email" name="email" type="email" required></div>
-          <div class="fld"><label for="cf-date">Date needed</label><input id="cf-date" name="date" type="date"></div>
+          <div class="fld"><label for="cf-date">Date needed</label><input id="cf-date" name="date" type="date"><p class="cf-datehint">Custom orders need at least 2 weeks notice, so earlier dates can't be picked. Need it sooner? Message The Cake Ball Lady to see if she can accommodate a shorter turnaround.</p></div>
         </div>
         <div class="fld"><label for="cf-occasion">Occasion</label><input id="cf-occasion" name="occasion" placeholder="Birthday, wedding, tailgate..."></div>
         <div class="fld">
@@ -1344,6 +1345,11 @@
     var form=e.target;
     var items=[].slice.call(document.querySelectorAll('#customForm input[name="items"]:checked')).map(function(c){return c.value;});
     if(!items.length){ showModal("&#127856;","One more thing","Please check which item you'd like a custom order for (Cake Balls, Cake Pops, Cakesicles, or Gift Boxes)."); return; }
+    // Safety net for a typed too-soon date (the picker already blocks earlier ones).
+    var dateEl=$("cf-date");
+    if(dateEl.value && dateEl.min && dateEl.value < dateEl.min){
+      showModal("&#128197;","Less than 2 weeks away","The date you selected is less than 2 weeks away, so it can't be booked online. Please message The Cake Ball Lady to see if she can accommodate a shorter turnaround."); return;
+    }
     var undecided=cfUndecided.checked;
     var payload={ name:$("cf-name").value.trim(), phone:$("cf-phone").value.trim(), email:$("cf-email").value.trim(),
       occasion:$("cf-occasion").value.trim(), date:$("cf-date").value.trim(), items:items,
