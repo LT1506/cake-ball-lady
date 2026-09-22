@@ -24,7 +24,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --white:#FFFDFB;--blush:#FFF0F4;--cocoa:#4A2C2A;--cocoa-soft:#8A6866;
+    --white:#FFFDFB;--line:#F0E4E0;--blush:#FFF0F4;--cocoa:#4A2C2A;--cocoa-soft:#8A6866;
     --pink:#F2568C;--pink-deep:#D33B72;--mint:#7DD8C3;--butter:#FFD666;--sky:#8FC7F2;
     --radius:20px;
   }
@@ -524,7 +524,7 @@
         </div>
         <div class="form-row">
           <div class="fld"><label for="cf-email">Email address</label><input id="cf-email" name="email" type="email" required></div>
-          <div class="fld"><label for="cf-date">Date needed</label><input id="cf-date" name="date" type="date"><p class="cf-datehint">Custom orders need at least 2 weeks notice. Need it sooner? Message The Cake Ball Lady to see if she can accommodate a shorter turnaround.</p></div>
+          <div class="fld"><label for="cf-dateBtn">Date needed</label><button type="button" id="cf-dateBtn" class="pickbtn">Choose a date…</button><input type="hidden" id="cf-date" name="date" value=""><div class="pkcal" id="cfCal" hidden></div><p class="cf-datehint">Custom orders need at least 2 weeks notice. Need it sooner? Message The Cake Ball Lady to see if she can accommodate a shorter turnaround.</p></div>
         </div>
         <div class="fld"><label for="cf-occasion">Occasion</label><input id="cf-occasion" name="occasion" placeholder="Birthday, wedding, tailgate..."></div>
         <div class="fld">
@@ -1102,28 +1102,30 @@
     return true;
   }
   var PCM_MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
-  function pickCalMonthHtml(year,month,lead){
+  function pickCalMonthHtml(year,month,canPick){
     var start=new Date(year,month,1).getDay(), days=new Date(year,month+1,0).getDate();
     var html='<div class="pcm"><div class="pcm-h">'+PCM_MN[month]+' '+year+'</div><div class="pcm-grid">';
     ["S","M","T","W","T","F","S"].forEach(function(w){ html+='<span class="pcm-w">'+w+'</span>'; });
     for(var i=0;i<start;i++) html+='<span></span>';
     for(var day=1;day<=days;day++){
       var d=new Date(year,month,day);
-      if(isSelectable(d,lead)) html+='<button type="button" class="pcm-d" data-iso="'+isoDate(d)+'" data-label="'+esc(fmtDate(d))+'">'+day+'</button>';
+      if(canPick(d)) html+='<button type="button" class="pcm-d" data-iso="'+isoDate(d)+'" data-label="'+esc(fmtDate(d))+'">'+day+'</button>';
       else html+='<span class="pcm-d">'+day+'</span>';
     }
     html+='</div></div>';
     return html;
   }
-  function calMonthsHtml(){
-    var lead=cartMaxLead(), now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  function calMonthsHtml(canPick, months, from){
+    var now=from||new Date(), y=now.getFullYear(), m=now.getMonth();
     var html="";
-    for(var i=m;i<=11;i++){ html+=pickCalMonthHtml(y,i,lead); }   // rest of this year
-    if(m===11){ html+=pickCalMonthHtml(y+1,0,lead); }             // in Dec, also show next Jan
+    if(months){ for(var k=0;k<months;k++){ html+=pickCalMonthHtml(y+Math.floor((m+k)/12),(m+k)%12,canPick); } return html; }
+    for(var i=m;i<=11;i++){ html+=pickCalMonthHtml(y,i,canPick); }   // rest of this year
+    if(m===11){ html+=pickCalMonthHtml(y+1,0,canPick); }             // in Dec, also show next Jan
     return html;
   }
-  function buildPickCal(){ $("pkcal").innerHTML=calMonthsHtml(); }
-  function buildShopCal(){ $("shopCal").innerHTML=calMonthsHtml(); }
+  function pickupCalHtml(){ var lead=cartMaxLead(); return calMonthsHtml(function(d){ return isSelectable(d,lead); }); }
+  function buildPickCal(){ $("pkcal").innerHTML=pickupCalHtml(); }
+  function buildShopCal(){ $("shopCal").innerHTML=pickupCalHtml(); }
   // choose a pickup day from either the top-of-shop step or the cart: single source of truth
   function setPickup(dObj, label){
     selectedPickup=dObj;
@@ -1392,9 +1394,9 @@
     var form=e.target;
     var items=[].slice.call(document.querySelectorAll('#customForm input[name="items"]:checked')).map(function(c){return c.value;});
     if(!items.length){ showModal("&#127856;","One more thing","Please check which item you'd like a custom order for (Cake Balls, Cake Pops, Cakesicles, or Gift Boxes)."); return; }
-    // Safety net for a typed too-soon date (the picker already blocks earlier ones).
+    // Safety net: the calendar only offers days 2+ weeks out, but a page left open for days could go stale.
     var dateEl=$("cf-date");
-    if(dateEl.value && dateEl.min && dateEl.value < dateEl.min){
+    if(dateEl.value && dateEl.value < customMinIso()){
       showModal("&#128197;","Less than 2 weeks away","The date you selected is less than 2 weeks away, so it can't be booked online. Please message The Cake Ball Lady to see if she can accommodate a shorter turnaround."); return;
     }
     var undecided=cfUndecided.checked;
@@ -1410,8 +1412,8 @@
     }
     fetch(API_BASE+"/api/custom-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
       .then(function(res){ if(!res.ok) throw new Error("bad"); return res.json(); })
-      .then(function(){ showModal("&#128233;","Request sent!","Thanks! Your custom request went straight to The Cake Ball Lady. She'll send a quote within 48 hours, along with a link to pay by card."); form.reset(); })
-      .catch(function(){ fallbackEmail(); showModal("&#128233;","Opening your email…","We couldn't send it automatically, so we put your request into an email to The Cake Ball Lady — just hit send. If your email app didn't open, send your details to cakeballsbyjoni@gmail.com."); form.reset(); });
+      .then(function(){ showModal("&#128233;","Request sent!","Thanks! Your custom request went straight to The Cake Ball Lady. She'll send a quote within 48 hours, along with a link to pay by card."); resetCustomForm(); })
+      .catch(function(){ fallbackEmail(); showModal("&#128233;","Opening your email…","We couldn't send it automatically, so we put your request into an email to The Cake Ball Lady — just hit send. If your email app didn't open, send your details to cakeballsbyjoni@gmail.com."); resetCustomForm(); });
   });
 
   // modal
@@ -1460,9 +1462,19 @@
     t.addEventListener("click",function(){ var open=links.classList.toggle("open"); t.setAttribute("aria-expanded",open?"true":"false"); });
     links.addEventListener("click",function(e){ if(e.target.tagName==="A"){ links.classList.remove("open"); t.setAttribute("aria-expanded","false"); } });
   }
-  function setupFormMin(){
-    var el=$("cf-date"); if(!el) return;
-    var d=new Date(); d.setDate(d.getDate()+14); el.min=d.toISOString().slice(0,10);
+  // Custom orders: any day 2+ weeks out. A real calendar (not <input type=date>) because the iPhone
+  // picker ignores min= and let people tap dates that were greyed out on desktop.
+  function customMinIso(){ var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+14); return isoDate(d); }
+  function customSelectable(d){ return isoDate(d)>=customMinIso(); }
+  function buildCustomCal(){ $("cfCal").innerHTML=calMonthsHtml(customSelectable, 12, isoToDate(customMinIso())); }
+  function resetCustomForm(){ $("customForm").reset(); $("cf-date").value=""; $("cf-dateBtn").textContent="Choose a date…"; }
+  function setupCustomCal(){
+    var btn=$("cf-dateBtn"), cal=$("cfCal"); if(!btn||!cal) return;
+    btn.addEventListener("click",function(){ if(cal.hidden){ buildCustomCal(); cal.hidden=false; } else { cal.hidden=true; } });
+    cal.addEventListener("click",function(e){
+      var b=e.target.closest("button.pcm-d"); if(!b) return;
+      $("cf-date").value=b.getAttribute("data-iso"); btn.textContent=b.getAttribute("data-label"); cal.hidden=true;
+    });
   }
 
   // ---- Live content from the admin backend (falls back to the built-in data) ----
@@ -1535,7 +1547,7 @@
 
   render();
   updateShopLock();
-  setupReveal(); setupSprinkles(); setupSlides(); setupNav(); setupFormMin(); fetchContent();
+  setupReveal(); setupSprinkles(); setupSlides(); setupNav(); setupCustomCal(); fetchContent();
 
   // thank-you after returning from Stripe checkout
   if(/[?&]order=success/.test(location.search)){
