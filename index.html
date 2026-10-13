@@ -125,6 +125,9 @@
   .t-info p{color:var(--cocoa-soft);font-weight:600;font-size:.85rem;margin:2px 0 0;}
   .t-caret{font-family:'Baloo 2';font-weight:800;font-size:1.5rem;color:var(--pink-deep);width:26px;text-align:center;}
   .t-body{padding:0 16px 16px;}
+  .t-info p.t-out{color:#B3261E;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:.78rem;}
+  .tile.soldout .t-pic{filter:grayscale(.6);opacity:.7;}
+  .t-soldout{background:#FDECEF;border:2px dashed #F0C6D4;border-radius:12px;padding:12px 14px;color:var(--cocoa);font-weight:700;font-size:.92rem;text-align:center;margin:0;}
   .t-desc{color:var(--cocoa-soft);font-size:.9rem;margin:0 0 14px;line-height:1.45;}
   .t-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
   .t-row label{font-weight:800;font-size:.85rem;color:var(--cocoa);}
@@ -744,6 +747,8 @@
   var SINGLE_LOOKUP = {pops:{price:3,stuffed:3.75,name:"Cake Pop"}, sicle:{price:4,name:"Cakesicle"}};
   var DOZEN_SPECIALS = {};  // "sp_<id>_dozen" -> {perDozen,title} from content
   var SPECIAL_ITEMS = {};   // "sp_<id>_<optKey>" -> {name,price,form,flavored} for fixed-price special options
+  var SPECIAL_CAPS = {};    // special id -> {left: dozens left, title} for specials with a sell-out limit
+  var SPECIAL_BALLS = {};   // "sp_<id>_<optKey>" -> cake balls per box (dozen items count 12 per qty)
   function rebuildShop(){ OFFERINGS = BASE_OFFERINGS.concat(SPECIAL_OFFERINGS); renderShop(); }
   var SPECIAL_OFFERINGS = [];
 
@@ -891,10 +896,12 @@
       var open=!!openTiles[o.id];
       var pic=o.img?'<div class="t-pic" style="background-image:url(\''+esc(o.img)+'\')"></div>'
         :'<div class="t-pic" style="background:linear-gradient(135deg,'+o.color+','+shade(o.color)+')"></div>';
-      el.innerHTML='<button type="button" class="t-head">'+pic+'<div class="t-info"><h3>'+esc(o.title)+'</h3><p>'+esc(o.sub||"")+'</p></div><span class="t-caret">'+(open?"−":"+")+'</span></button>'+
-        '<div class="t-body"'+(open?"":" hidden")+'><p class="t-desc">'+esc(o.desc||"")+'</p>'+tileBodyHtml(o)+'</div>';
+      if(o.soldOut) el.className+=" soldout";
+      el.innerHTML='<button type="button" class="t-head">'+pic+'<div class="t-info"><h3>'+esc(o.title)+'</h3>'+(o.soldOut?'<p class="t-out">Sold out</p>':'<p>'+esc(o.sub||"")+'</p>')+'</div><span class="t-caret">'+(open?"−":"+")+'</span></button>'+
+        '<div class="t-body"'+(open?"":" hidden")+'><p class="t-desc">'+esc(o.desc||"")+'</p>'+
+        (o.soldOut?'<p class="t-soldout">Sold out! Thank you for all the love. Keep an eye on Facebook for the next one.</p>':tileBodyHtml(o))+'</div>';
       grid.appendChild(el);
-      if(open) refreshTile(el);
+      if(open && !o.soldOut) refreshTile(el);
     });
   }
   function tileFlavors(el){ return [].slice.call(el.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");}); }
@@ -957,6 +964,7 @@
     else if(o.kind==="options"){ id=tile.querySelector(".gtype.sel").getAttribute("data-opt"); qty=+tile.querySelector(".unit-qty").value; flavors=o.flavored?tileFlavors(tile):[];
       if(o.flavored && !flavors.length) return flashPick(tile); }
     else { var s=tile.querySelector(".flavsel"); id=o.id; flavors=s?[s.value]:[]; qty=+tile.querySelector(".unit-qty").value; }
+    if(!capRoom(id, qty)) return;
     var r=btn.getBoundingClientRect();
     addQty(id, flavors, qty);
     confettiBurst(r.left+r.width/2, r.top+r.height/2);
@@ -1215,7 +1223,21 @@
     if(cart[k]) cart[k].qty+=n; else cart[k]={id:id,flavors:flavors||[],qty:n};
     if(isDozenId(id) && cart[k].qty>10) cart[k].qty=10;
     render(); }
-  function chg(k,delta){ if(cart[k]){ cart[k].qty+=delta; if(isDozenId(cart[k].id)&&cart[k].qty>10)cart[k].qty=10; if(cart[k].qty<=0) delete cart[k]; } render(); }
+  // Sell-out limits: a special can cap how many dozen it sells. The server is
+  // the real gatekeeper; this just warns before the cart goes over.
+  function specialIdOf(id){ var m=/^sp_(\d+)_/.exec(id||""); return m?+m[1]:null; }
+  function capRoom(id, addQtyN){
+    var sid=specialIdOf(id), cap=sid!=null?SPECIAL_CAPS[sid]:null; if(!cap) return true;
+    var balls=(SPECIAL_BALLS[id]||0)*addQtyN;
+    Object.keys(cart).forEach(function(k){ var l=cart[k]; if(specialIdOf(l.id)===sid) balls+=(SPECIAL_BALLS[l.id]||0)*l.qty; });
+    if(balls<=cap.left*12+1e-6) return true;
+    var room=Math.round(cap.left*12);  // cake balls still available
+    var leftTxt=room<12?(room+" cake ball"+(room===1?"":"s")):(Math.round(room/12*100)/100+" dozen");
+    showModal("&#127875;", room>0?"Almost sold out":"Sold out",
+      room>0?("Only "+leftTxt+" of "+cap.title+" left. Please choose a smaller amount."):("Sorry, "+cap.title+" is sold out."));
+    return false;
+  }
+  function chg(k,delta){ if(cart[k] && delta>0 && !capRoom(cart[k].id, delta)) return; if(cart[k]){ cart[k].qty+=delta; if(isDozenId(cart[k].id)&&cart[k].qty>10)cart[k].qty=10; if(cart[k].qty<=0) delete cart[k]; } render(); }
   function lineTotal(line){ var id=line.id, fl=line.flavors||[], q=line.qty;
     if(id==="dozen") return dozenPrice(fl,q,24);
     if(DOZEN_SPECIALS[id]) return dozenPrice(fl,q,DOZEN_SPECIALS[id].perDozen);
@@ -1372,6 +1394,7 @@
         if(r.ok){
           var t=(r.j&&r.j.total!=null)?("$"+r.j.total.toFixed(2)):totalTxt;
           cart={}; $("ordNotes").value=""; promo=null; $("promoCode").value=""; $("promoHint").textContent=""; render(); closeCart();
+          fetchContent();  // refresh sold-out limits now that this order counts
           if(payMethod==="venmo"){
             showModal("&#128184;","Order placed!","Thanks "+name+"! Your order for "+t+" is in. Send "+t+" to "+(VENMO_HANDLE||"The Cake Ball Lady")+" on Venmo to confirm it. She'll mark it paid once it comes through.");
           } else {
@@ -1507,11 +1530,13 @@
       });
       buildSpecials();
       // Buyable by-the-dozen specials become "Order by the Dozen" shop tiles.
-      SPECIAL_OFFERINGS=[]; DOZEN_SPECIALS={}; SPECIAL_ITEMS={};
+      SPECIAL_OFFERINGS=[]; DOZEN_SPECIALS={}; SPECIAL_ITEMS={}; SPECIAL_CAPS={}; SPECIAL_BALLS={};
+      d.specials.forEach(function(s){ if(s.buyable && s.dozens_left!=null) SPECIAL_CAPS[s.id]={left:+s.dozens_left, title:(s.headline||"Special").trim()}; });
       d.specials.filter(function(s){ return s.buyable && s.dozen_mode; }).forEach(function(s){
         var ph=specPhotos[s.id], img=(ph&&ph.length)?ph[0].img:null, per=+s.price_per_dozen||0;
         var id="sp_"+s.id+"_dozen", title=(s.headline||"Special").trim();
-        SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per, form:"ball",
+        SPECIAL_BALLS[id]=12;
+        SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per, form:"ball", soldOut:!!s.sold_out,
           classicOnly:(s.flavor_mode!=="all"), sub:"$"+per+"/dozen · 1 to "+(s.max_dozen||10)+" dozen",
           desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:+s.lead_days||0});
         DOZEN_SPECIALS[id]={perDozen:per, title:title, leadDays:+s.lead_days||0};
@@ -1523,10 +1548,11 @@
         var opts=s.options.map(function(op){
           var oid="sp_"+s.id+"_"+op.key, price=+op.price||0, mx=+op.max_flavors||0, nm=title+" · "+op.label;
           SPECIAL_ITEMS[oid]={name:nm, price:price, form:form, flavored:(flavored&&mx>0), leadDays:lead};
+          SPECIAL_BALLS[oid]=+op.balls||0;
           return {id:oid, label:op.label, price:price, maxFlavors:mx};
         });
         var lowest=Math.min.apply(null, opts.map(function(o){ return o.price; }));
-        SPECIAL_OFFERINGS.push({kind:"options", id:"spo_"+s.id, title:title, opts:opts, form:form,
+        SPECIAL_OFFERINGS.push({kind:"options", id:"spo_"+s.id, title:title, opts:opts, form:form, soldOut:!!s.sold_out,
           flavored:flavored, sub:"from "+fmt(lowest), desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:lead});
       });
     }
