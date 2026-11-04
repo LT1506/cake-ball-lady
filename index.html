@@ -1095,7 +1095,18 @@
 
   // ---- pickup day: pop-up calendar (next 2 months, only valid Wed-Sat days) ----
   var LOC_NOTES={"Porch Pickup":"Ready by noon that day.","Locally Loved Boutique":"Available during the boutique's store hours.","Request another location (may incur a fee)":"We'll confirm the time and any fee with you."};
-  $("pickupLoc").addEventListener("change",function(){ $("locHint").textContent = LOC_NOTES[$("pickupLoc").value]||""; render(); });
+  // Extra pickup spots offered only on certain days (owner asks per holiday).
+  var EXTRA_LOCS={"2026-11-25":["Boonville","Newburgh"]};
+  var EXTRA_LOC_NOTE="Exact spot and time coming soon. We'll email you the details before pickup.";
+  function refreshLocOptions(){
+    var sel=$("pickupLoc"), cur=sel.value;
+    var extras=(selectedPickup && EXTRA_LOCS[isoDate(selectedPickup)])||[];
+    var opts=["Porch Pickup","Locally Loved Boutique"].concat(extras,["Request another location (may incur a fee)"]);
+    sel.innerHTML='<option value="">Choose a location…</option>'+opts.map(function(o){ return '<option>'+esc(o)+'</option>'; }).join("");
+    sel.value = opts.indexOf(cur)>=0 ? cur : "";
+    $("locHint").textContent = LOC_NOTES[sel.value]||(extras.indexOf(sel.value)>=0?EXTRA_LOC_NOTE:"");
+  }
+  $("pickupLoc").addEventListener("change",function(){ refreshLocOptions(); render(); });
 
   var BLOCKED_SITE=[], selectedPickup=null;
   function pad2(n){ return (n<10?"0":"")+n; }
@@ -1145,6 +1156,7 @@
     $("pickupBtn").textContent=label;
     $("shopPickBtn").textContent=label;
     $("pkcal").hidden=true; $("shopCal").hidden=true;
+    refreshLocOptions();
     var removed=revalidateCart();   // drop cart items whose flavors aren't offered for this date
     updateShopLock(removed);
     renderShop();                   // flavor pickers now reflect the chosen date
@@ -1207,7 +1219,7 @@
   function syncPickupLead(){
     // drop a chosen day if the cart now makes it invalid (extra lead, or it got blocked)
     if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){
-      selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…";
+      selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; refreshLocOptions();
       updateShopLock();
     }
     if(!$("pkcal").hidden) buildPickCal();
@@ -1511,7 +1523,7 @@
     BLOCKED_SITE = d.blocked_dates || [];
     VENMO_HANDLE = d.venmo_handle || "";
     if(!$("pkcal").hidden) buildPickCal();
-    if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; render(); }
+    if(selectedPickup && !isSelectable(selectedPickup, cartMaxLead())){ selectedPickup=null; $("pickupDate").value=""; $("pickupBtn").textContent="Choose a pickup day…"; refreshLocOptions(); render(); }
     if(d.flavors && d.flavors.length){
       var classic=[],classicWk=[],premium=[],week=[],forms={};
       d.flavors.forEach(function(f){
