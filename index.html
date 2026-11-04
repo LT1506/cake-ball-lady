@@ -174,6 +174,8 @@
   .menu-note.full{background:#EAF7EC;color:#2E7D46;border:1px solid #BFE6C8;}
   .menu-note.week{background:#FFF4E0;color:#9A6A16;border:1px solid #F3DCA6;}
   .menu-note.warn{background:#FDECEC;color:#B3273F;border:1px solid #F3C0C0;}
+  .sig-paused{max-width:680px;margin:0 auto 18px;background:#FFF4E0;border:2px dashed #F2C27A;border-radius:14px;padding:14px 18px;text-align:center;color:var(--cocoa);font-weight:700;font-size:.95rem;}
+  .sig-paused[hidden]{display:none;}
   .shop-lockmsg{text-align:center;max-width:640px;margin:0 auto 14px;color:var(--cocoa-soft);font-weight:700;font-size:.92rem;}
   .shop-grid.locked{opacity:.4;pointer-events:none;filter:grayscale(.35);}
 
@@ -443,6 +445,7 @@
       <h2>Order online</h2>
       <p>Start by choosing your pickup day, then pick your flavors and add to your order. Signature style means each cake ball is decorated to look like its flavor.</p>
     </div>
+    <div class="sig-paused" id="sigPaused" hidden>🎄 Our signature menu is taking a holiday break until the new year. You can still order the holiday specials below, or <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a custom order</a>.</div>
     <div class="date-step" id="dateStep">
       <div class="ds-num">1</div>
       <div class="ds-body">
@@ -456,7 +459,7 @@
     <div class="shop-lockmsg" id="shopLockMsg">👆 Choose your pickup day above to see flavors and start your order.</div>
     <div class="shop-grid locked" id="shopGrid"></div>
     <p class="shop-foot">Want custom colors, a theme, or custom-decoration gift boxes? <b>Custom orders start at $26/dozen</b> — <a href="#custom" style="color:var(--pink-deep);font-weight:800;">request a quote below</a>.</p>
-    <p class="shop-foot" style="margin-top:8px;font-size:.88rem;">Gift box orders have a <b>$20 minimum</b> (cake balls &amp; pops count toward it).</p>
+    <p class="shop-foot" id="giftMinNote" style="margin-top:8px;font-size:.88rem;">Gift box orders have a <b>$20 minimum</b> (cake balls &amp; pops count toward it).</p>
   </div>
 </section>
 
@@ -749,7 +752,8 @@
   var SPECIAL_ITEMS = {};   // "sp_<id>_<optKey>" -> {name,price,form,flavored} for fixed-price special options
   var SPECIAL_CAPS = {};    // special id -> {left: dozens left, title} for specials with a sell-out limit
   var SPECIAL_BALLS = {};   // "sp_<id>_<optKey>" -> cake balls per box (dozen items count 12 per qty)
-  function rebuildShop(){ OFFERINGS = BASE_OFFERINGS.concat(SPECIAL_OFFERINGS); renderShop(); }
+  var SIGNATURE_OPEN = true; // owner's "Sell the signature menu" switch (from /api/content)
+  function rebuildShop(){ OFFERINGS = (SIGNATURE_OPEN ? BASE_OFFERINGS : []).concat(SPECIAL_OFFERINGS); renderShop(); }
   var SPECIAL_OFFERINGS = [];
 
   // ---------- Specials (sample; she updates) ----------
@@ -1555,6 +1559,14 @@
         SPECIAL_OFFERINGS.push({kind:"options", id:"spo_"+s.id, title:title, opts:opts, form:form, soldOut:!!s.sold_out,
           flavored:flavored, sub:"from "+fmt(lowest), desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:lead});
       });
+    }
+    SIGNATURE_OPEN = d.signature_open !== false;
+    $("sigPaused").hidden = SIGNATURE_OPEN;
+    $("giftMinNote").hidden = !SIGNATURE_OPEN;
+    if(!SIGNATURE_OPEN){
+      var dropped=false;
+      Object.keys(cart).forEach(function(k){ if(String(cart[k].id).indexOf("sp_")!==0){ delete cart[k]; dropped=true; } });
+      if(dropped) render();
     }
     rebuildShop();
     updateShopLock();
