@@ -853,7 +853,8 @@
     if(o.kind==="dozen"){
       var list=flavorsForForm(form, !o.classicOnly);
       return '<div class="t-row"><label>How many dozen?</label><select class="dz-qty">'+qtyOptions(10)+'</select></div>'+
-        '<div class="fplabel">Pick up to <b class="fcap">4</b> flavors — <span class="fsel">0</span> chosen</div>'+
+        '<div class="fplabel">Pick up to <b class="fcap">'+(o.flavorsPerDozen||4)+'</b> flavors — <span class="fsel">0</span> chosen</div>'+
+        (o.flavorsPerDozen?'<div class="fnote">'+o.flavorsPerDozen+' flavors per dozen.</div>':'')+
         '<div class="fchips">'+chipHtml(list)+'</div>'+
         (o.classicOnly?'':'<div class="fnote">Premium flavors add $0.50 per ball.</div>')+
         '<div class="priced"><span class="price">'+fmt(o.perDozen)+'</span></div>'+
@@ -910,7 +911,7 @@
   }
   function tileFlavors(el){ return [].slice.call(el.querySelectorAll(".fchip.sel")).map(function(c){return c.getAttribute("data-flav");}); }
   function tileCap(el,o){
-    if(o.kind==="dozen") return dozenMaxFlavors(+el.querySelector(".dz-qty").value);
+    if(o.kind==="dozen"){ var dq=+el.querySelector(".dz-qty").value; return o.flavorsPerDozen ? o.flavorsPerDozen*dq : dozenMaxFlavors(dq); }
     if(o.kind==="gift") return +el.querySelector(".gtype.sel").getAttribute("data-max");
     if(o.kind==="options"){ var g=el.querySelector(".gtype.sel"); return g?(+g.getAttribute("data-max")||0):0; }
     return 1;
@@ -1173,8 +1174,7 @@
         note.className="menu-note warn";
         note.innerHTML="Heads up — these were removed because their flavors aren't offered for that day: <b>"+removed.map(esc).join(", ")+"</b>. Please re-add them.";
       } else if(fullMenu()){
-        note.className="menu-note full";
-        note.innerHTML="🎉 You're ordering 2+ weeks ahead, so the full <b>Signature Decoration</b> flavor menu is unlocked.";
+        note.hidden=true;   // owner asked to drop the "2+ weeks ahead, full menu unlocked" box
       } else {
         note.className="menu-note week";
         note.innerHTML="Showing <b>this week's flavors</b>. Order 2+ weeks ahead to unlock the full <b>Signature Decoration</b> flavor menu.";
@@ -1553,7 +1553,8 @@
         var id="sp_"+s.id+"_dozen", title=(s.headline||"Special").trim();
         SPECIAL_BALLS[id]=12;
         SPECIAL_OFFERINGS.push({kind:"dozen", id:id, title:title, perDozen:per, form:"ball", soldOut:!!s.sold_out,
-          classicOnly:(s.flavor_mode!=="all"), sub:"$"+per+"/dozen · 1 to "+(s.max_dozen||10)+" dozen",
+          classicOnly:(s.flavor_mode!=="all"), ord:d.specials.indexOf(s), flavorsPerDozen:+s.flavors_per_dozen||0,
+          sub:"$"+per+"/dozen · "+(+s.flavors_per_dozen?(+s.flavors_per_dozen)+" flavors per dozen":"1 to "+(s.max_dozen||10)+" dozen"),
           desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:+s.lead_days||0});
         DOZEN_SPECIALS[id]={perDozen:per, title:title, leadDays:+s.lead_days||0};
       });
@@ -1568,10 +1569,12 @@
           return {id:oid, label:op.label, price:price, maxFlavors:mx};
         });
         var lowest=Math.min.apply(null, opts.map(function(o){ return o.price; }));
-        SPECIAL_OFFERINGS.push({kind:"options", id:"spo_"+s.id, title:title, opts:opts, form:form, soldOut:!!s.sold_out,
+        SPECIAL_OFFERINGS.push({kind:"options", id:"spo_"+s.id, title:title, opts:opts, form:form, soldOut:!!s.sold_out, ord:d.specials.indexOf(s),
           flavored:flavored, sub:"from "+fmt(lowest), desc:(s.details||"").trim(), img:img, color:"#A11833", leadDays:lead});
       });
     }
+    // Show specials in the owner's dashboard order (not dozen-style ones first).
+    SPECIAL_OFFERINGS.sort(function(a,b){ return a.ord-b.ord; });
     SIGNATURE_OPEN = d.signature_open !== false;
     $("sigPaused").hidden = SIGNATURE_OPEN;
     $("giftMinNote").hidden = !SIGNATURE_OPEN;
