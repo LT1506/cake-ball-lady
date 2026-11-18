@@ -1517,7 +1517,10 @@
   }
 
   // ---- Live content from the admin backend (falls back to the built-in data) ----
-  var API_BASE="https://cake-ball-admin-production.up.railway.app";
+  // A local preview (localhost) talks to the Railway dev copy, so testing never touches real orders.
+  var API_BASE=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+    ? "https://cake-ball-admin-dev.up.railway.app"
+    : "https://cake-ball-admin-production.up.railway.app";
   var CONTENT_API=API_BASE+"/api/content", CHECKOUT_URL=API_BASE+"/api/checkout", PLACE_URL=API_BASE+"/api/place-order";
   function applyContent(d){
     BLOCKED_SITE = d.blocked_dates || [];
